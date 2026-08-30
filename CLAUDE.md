@@ -31,3 +31,4 @@ iOS ターゲットのビルドには Xcode が必要。`xcode-select -p` が Co
 - トップレベルの `android { }` ブロックを書かない
 - `.gitignore` に `*.jar` を追加しない（`gradle-wrapper.jar` が消える）
 - `compileSdk` を 37 未満に下げない（AndroidX の最新版が要求する）
+- publish 済みのバージョンを再 publish しない（GitHub Packages は 409 を返す。必ず version を上げる）

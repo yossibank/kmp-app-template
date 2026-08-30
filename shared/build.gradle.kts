@@ -10,6 +10,22 @@ plugins {
 group = "com.yossibank"
 version = "0.1.0"
 
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/yossibank/kmp-app-template")
+            // ローカルは ~/.gradle/gradle.properties、CI は Actions の環境変数から取る。
+            credentials {
+                username = providers.gradleProperty("gpr.user")
+                    .orElse(providers.environmentVariable("GITHUB_ACTOR")).orNull
+                password = providers.gradleProperty("gpr.token")
+                    .orElse(providers.environmentVariable("GITHUB_TOKEN")).orNull
+            }
+        }
+    }
+}
+
 kotlin {
     // AGP 9 以降、KMP の Android ターゲットは kotlin { android { } } で設定する。
     // トップレベルの android { } ブロックは使わない。

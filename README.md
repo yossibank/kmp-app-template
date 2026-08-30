@@ -24,6 +24,7 @@ flowchart LR
 | `make build-android` | AAR / klib |
 | `make build-ios` | `Shared.xcframework` → `shared/build/XCFrameworks/{debug,release}/` |
 | `make publish-local` | mavenLocal へ publish（アプリ側から参照するため） |
+| `make publish-github` | GitHub Packages へ publish（`gpr.user` / `gpr.token` が必要） |
 | `make test` | 全ターゲットのテスト |
 
 ## モジュール構成
