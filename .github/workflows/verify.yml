@@ -1,0 +1,42 @@
+name: Verify
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - '*'
+
+permissions:
+  contents: read
+
+env:
+  DEVELOPER_DIR: /Applications/Xcode.app
+
+jobs:
+  verify:
+    name: Build and test
+    # iOS ターゲットのビルドに Xcode が必要なため macOS ランナーを使う
+    runs-on: macos-26
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      # gradle/gradle-daemon-jvm.properties が Java 25 を要求する。
+      # 事前に用意しないと Gradle が foojay から自動ダウンロードして遅くなる。
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Verify
+        run: make verify
