@@ -23,6 +23,7 @@ flowchart LR
 | `make verify` | XCFramework のビルド + 全ターゲットのテスト（変更後はこれを通す） |
 | `make build-android` | AAR / klib |
 | `make build-ios` | `Shared.xcframework` → `shared/build/XCFrameworks/{debug,release}/` |
+| `make publish-local` | mavenLocal へ publish（アプリ側から参照するため） |
 | `make test` | 全ターゲットのテスト |
 
 ## モジュール構成
