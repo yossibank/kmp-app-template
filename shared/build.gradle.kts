@@ -1,10 +1,11 @@
-import java.io.ByteArrayOutputStream
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
+import java.io.ByteArrayOutputStream
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.kotlin.multiplatform.library)
+    alias(libs.plugins.ktlint)
     `maven-publish`
 }
 
@@ -18,10 +19,16 @@ publishing {
             url = uri("https://maven.pkg.github.com/yossibank/kmp-app-template")
             // ローカルは ~/.gradle/gradle.properties、CI は Actions の環境変数から取る。
             credentials {
-                username = providers.gradleProperty("gpr.user")
-                    .orElse(providers.environmentVariable("GITHUB_ACTOR")).orNull
-                password = providers.gradleProperty("gpr.token")
-                    .orElse(providers.environmentVariable("GITHUB_TOKEN")).orNull
+                username =
+                    providers
+                        .gradleProperty("gpr.user")
+                        .orElse(providers.environmentVariable("GITHUB_ACTOR"))
+                        .orNull
+                password =
+                    providers
+                        .gradleProperty("gpr.token")
+                        .orElse(providers.environmentVariable("GITHUB_TOKEN"))
+                        .orNull
             }
         }
     }
@@ -90,8 +97,13 @@ abstract class PackageXCFrameworkTask : DefaultTask() {
 
         execOperations.exec {
             commandLine(
-                "ditto", "-c", "-k", "--sequesterRsrc", "--keepParent",
-                xcframework.absolutePath, zip.absolutePath,
+                "ditto",
+                "-c",
+                "-k",
+                "--sequesterRsrc",
+                "--keepParent",
+                xcframework.absolutePath,
+                zip.absolutePath,
             )
         }
 
