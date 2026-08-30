@@ -26,6 +26,8 @@ flowchart LR
 | `make publish-local` | mavenLocal へ publish（アプリ側から参照するため） |
 | `make publish-github` | GitHub Packages へ publish（`gpr.user` / `gpr.token` が必要） |
 | `make test` | 全ターゲットのテスト |
+| `make lint` | ktlint によるチェック（`make verify` に含まれる） |
+| `make format` | ktlint で自動修正 |
 
 ## モジュール構成
 
