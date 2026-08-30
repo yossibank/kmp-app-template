@@ -1,3 +1,4 @@
+import java.io.ByteArrayOutputStream
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 
@@ -60,4 +61,58 @@ kotlin {
             implementation(kotlin("test"))
         }
     }
+}
+
+// SPM の binaryTarget が要求する zip と checksum を生成する。
+// XCFramework 自体は Kotlin プラグインの assembleSharedReleaseXCFramework が作るので、
+// xcodebuild -create-xcframework を自前で呼ぶ必要はない。
+abstract class PackageXCFrameworkTask : DefaultTask() {
+    @get:Inject
+    abstract val execOperations: ExecOperations
+
+    @get:InputDirectory
+    abstract val xcframeworkDir: DirectoryProperty
+
+    @get:OutputFile
+    abstract val zipFile: RegularFileProperty
+
+    @get:OutputFile
+    abstract val checksumFile: RegularFileProperty
+
+    @TaskAction
+    fun execute() {
+        val xcframework = xcframeworkDir.get().asFile
+        val zip = zipFile.get().asFile
+        val checksum = checksumFile.get().asFile
+
+        zip.parentFile.mkdirs()
+        if (zip.exists()) zip.delete()
+
+        execOperations.exec {
+            commandLine(
+                "ditto", "-c", "-k", "--sequesterRsrc", "--keepParent",
+                xcframework.absolutePath, zip.absolutePath,
+            )
+        }
+
+        val output = ByteArrayOutputStream()
+        execOperations.exec {
+            commandLine("swift", "package", "compute-checksum", zip.absolutePath)
+            standardOutput = output
+        }
+        val value = output.toString().trim()
+        checksum.writeText(value)
+
+        logger.lifecycle("zip      : ${zip.absolutePath}")
+        logger.lifecycle("checksum : $value")
+    }
+}
+
+tasks.register<PackageXCFrameworkTask>("packageXCFramework") {
+    dependsOn("assembleSharedReleaseXCFramework")
+    group = "build"
+    description = "Release の XCFramework を zip 化し、SPM 用の checksum を出力する"
+    xcframeworkDir.set(layout.buildDirectory.dir("XCFrameworks/release/Shared.xcframework"))
+    zipFile.set(layout.buildDirectory.file("spm/Shared.xcframework.zip"))
+    checksumFile.set(layout.buildDirectory.file("spm/checksum.txt"))
 }
