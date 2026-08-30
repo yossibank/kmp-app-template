@@ -35,7 +35,8 @@ shared/src/
 XCFramework は `shared/build/XCFrameworks/{debug,release}/` に出力される。
 iOS ターゲットのビルドには Xcode が必要。
 
-Android Studio からは Run Configuration「All Tests」で全ターゲットのテストを実行できる。
+Android Studio 用の Run Configuration を `.run/` に用意している。
+「All Tests」で全ターゲット、「Android Tests」「iOS Tests」で片方だけを実行できる。
 
 ## 関連リポジトリ
 
