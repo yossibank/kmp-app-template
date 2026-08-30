@@ -1,7 +1,43 @@
 # kmp-app-template
 
-iOS / Android で共有するロジックを置く Kotlin Multiplatform の共通ライブラリ。
-アプリ本体は含まない。
+> iOS / Android で共有するロジックの Kotlin Multiplatform ライブラリ。アプリ本体は含まない。
+
+## 3 リポジトリの関係
+
+```mermaid
+flowchart LR
+    KMP["kmp-app-template<br/>← このリポジトリ"]
+    AND["android-app-template<br/>Android アプリ"]
+    IOS["ios-app-template<br/>iOS アプリ"]
+    KMP -->|"AAR / klib"| AND
+    KMP -->|"Shared.xcframework"| IOS
+```
+
+[ios-app-template](https://github.com/yossibank/ios-app-template) ・
+[android-app-template](https://github.com/yossibank/android-app-template)
+
+## コマンド
+
+| コマンド | 内容 |
+| --- | --- |
+| `make verify` | XCFramework のビルド + 全ターゲットのテスト（変更後はこれを通す） |
+| `make build-android` | AAR / klib |
+| `make build-ios` | `Shared.xcframework` |
+| `make test` | 全ターゲットのテスト |
+
+XCFramework は `shared/build/XCFrameworks/{debug,release}/` に出力される。
+iOS ターゲットのビルドには Xcode が必要。
+Android Studio からは Run Configuration「All Tests」「Android Tests」「iOS Tests」を使える。
+
+## モジュール構成
+
+```
+shared/src/
+├─ commonMain/   共通ロジック
+├─ commonTest/   両OSで実行されるテスト
+├─ androidMain/  Android 固有の実装
+└─ iosMain/      iOS 固有の実装
+```
 
 ## 環境
 
@@ -13,33 +49,3 @@ iOS / Android で共有するロジックを置く Kotlin Multiplatform の共�
 | compileSdk | 37 |
 | minSdk | 24 |
 | iOS ターゲット | iosArm64 / iosSimulatorArm64 / iosX64 |
-
-## 構成
-
-```
-shared/src/
-├─ commonMain/   共通ロジック
-├─ commonTest/   両OSで実行されるテスト
-├─ androidMain/  Android 固有の実装
-└─ iosMain/      iOS 固有の実装
-```
-
-## ビルド
-
-```sh
-make verify         # XCFramework のビルド + 全ターゲットのテスト
-make build-android  # AAR / klib
-make build-ios      # Shared.xcframework
-make test           # 全ターゲットのテスト
-```
-
-XCFramework は `shared/build/XCFrameworks/{debug,release}/` に出力される。
-iOS ターゲットのビルドには Xcode が必要。
-
-Android Studio 用の Run Configuration を `.run/` に用意している。
-「All Tests」で全ターゲット、「Android Tests」「iOS Tests」で片方だけを実行できる。
-
-## 関連リポジトリ
-
-- [ios-app-template](https://github.com/yossibank/ios-app-template)
-- [android-app-template](https://github.com/yossibank/android-app-template)
