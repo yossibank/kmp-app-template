@@ -27,9 +27,10 @@ shared/src/
 ## ビルド
 
 ```sh
-./gradlew :shared:assembleAndroidMain        # AAR / klib
-./gradlew :shared:assembleSharedXCFramework  # Shared.xcframework
-./gradlew :shared:allTests                   # 全ターゲットのテスト
+make verify         # XCFramework のビルド + 全ターゲットのテスト
+make build-android  # AAR / klib
+make build-ios      # Shared.xcframework
+make test           # 全ターゲットのテスト
 ```
 
 XCFramework は `shared/build/XCFrameworks/{debug,release}/` に出力される。
