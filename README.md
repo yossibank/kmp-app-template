@@ -22,12 +22,8 @@ flowchart LR
 | --- | --- |
 | `make verify` | XCFramework のビルド + 全ターゲットのテスト（変更後はこれを通す） |
 | `make build-android` | AAR / klib |
-| `make build-ios` | `Shared.xcframework` |
+| `make build-ios` | `Shared.xcframework` → `shared/build/XCFrameworks/{debug,release}/` |
 | `make test` | 全ターゲットのテスト |
-
-XCFramework は `shared/build/XCFrameworks/{debug,release}/` に出力される。
-iOS ターゲットのビルドには Xcode が必要。
-Android Studio からは Run Configuration「All Tests」「Android Tests」「iOS Tests」を使える。
 
 ## モジュール構成
 
@@ -49,3 +45,4 @@ shared/src/
 | compileSdk | 37 |
 | minSdk | 24 |
 | iOS ターゲット | iosArm64 / iosSimulatorArm64 / iosX64 |
+| Xcode | 26.x（iOS ターゲットのビルドに必要） |
