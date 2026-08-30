@@ -46,6 +46,12 @@ if [ -n "$(git status --porcelain)" ]; then
     exit 1
 fi
 
+# Gradle の GitHub Packages 認証。
+# このスクリプトは既に gh に依存しているので、認証情報もそこから導出する。
+# GitHub Actions 上では両方あらかじめ設定されているため、この行は素通りする。
+export GITHUB_ACTOR="${GITHUB_ACTOR:-$(gh api user --jq .login)}"
+export GITHUB_TOKEN="${GITHUB_TOKEN:-$(gh auth token)}"
+
 echo "▶ ${TAG} のリリースを開始します"
 
 # 1. version を先に確定させる。
