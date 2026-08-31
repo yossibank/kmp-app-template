@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.kotlin.multiplatform.library)
     alias(libs.plugins.ktlint)
+    alias(libs.plugins.skie)
     `maven-publish`
 }
 
@@ -67,6 +68,17 @@ kotlin {
         commonTest.dependencies {
             implementation(kotlin("test"))
         }
+    }
+}
+
+// SKIE は suspend を Swift の async throws に、Flow を AsyncSequence に、
+// sealed interface を網羅的に switch できる enum に変換する。
+// これが無いと ObjC の completionHandler と
+// SharedKotlinx_coroutines_coreFlow のような型名が iOS 側に露出する。
+skie {
+    analytics {
+        // 既定でビルド情報を外部送信するため無効化する。
+        enabled.set(false)
     }
 }
 
