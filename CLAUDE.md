@@ -18,6 +18,8 @@ iOS ターゲットのビルドには Xcode が必要。`xcode-select -p` が Co
 - ビジネスロジックのテストは `commonTest` に置く。1 度書けば両OSで実行される。
 - `expect`/`actual` は OS の薄いシムのみ（時刻・UUID・パス・鍵保管・ログ出力）。
   ビジネスロジックの分岐には使わず、interface + DI で注入する。
+- SKIE を外さない。suspend / Flow / sealed interface が ObjC の completionHandler や
+  SharedKotlinx_coroutines_coreFlow として iOS 側に露出するようになる。
 - iOS へは shared モジュールが XCFramework 1 枚として公開される（umbrella）。
 - iOS に公開する型は data class / sealed interface / enum のみ。
 - 例外を投げない。結果は sealed な型で返す。

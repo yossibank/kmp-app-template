@@ -17,7 +17,6 @@ env:
 jobs:
   verify:
     name: Build and test
-    # iOS ターゲットのビルドに Xcode が必要なため macOS ランナーを使う
     runs-on: macos-26
 
     steps:
@@ -41,11 +40,7 @@ jobs:
       - name: Verify
         run: make verify
 
-      # make verify は共通コアがコンパイルできることまでしか見ていない。
-      # publish される AAR は作られず、アプリがそれを使えるかも確認されない。
-      # ここで実際に publish し、Android アプリをそれに向けてビルドする。
-      # 検証用バージョンはリモートに存在しないため、GitHub Packages の
-      # 既存成果物を誤って引くことがない。
+      # make verify は共通コアのコンパイルまでしか見ないので、消費側まで確認する。
       - name: Check out the Android app
         uses: actions/checkout@v7
         with:
@@ -63,9 +58,6 @@ jobs:
         working-directory: consumer-android
         run: ./gradlew assembleDebug testDebugUnitTest
 
-      # iOS も同じ理由で消費側まで見る。XCFramework は作られるが、それを
-      # アプリが使えるかは公開後まで分からなかった。SKIE が生成する Swift の
-      # API が変わる類の破壊はここでしか捕まらない。
       - name: Check out the iOS app
         uses: actions/checkout@v7
         with:

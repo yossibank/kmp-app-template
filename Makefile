@@ -1,6 +1,5 @@
 .PHONY: verify lint format build build-android build-ios publish-local publish-github test clean
 
-# 変更後に必ず通すもの。iOS ターゲットのビルドには Xcode が必要。
 verify:
 	./gradlew :shared:ktlintCheck :shared:assembleSharedXCFramework :shared:allTests
 

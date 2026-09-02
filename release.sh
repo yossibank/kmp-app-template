@@ -1,7 +1,5 @@
 #!/bin/bash
 #
-# 共通コアをリリースする。
-#
 #   ./release.sh 0.3.0
 #
 # 実行すると次が起きる:
@@ -46,9 +44,7 @@ if [ -n "$(git status --porcelain)" ]; then
     exit 1
 fi
 
-# Gradle の GitHub Packages 認証。
-# このスクリプトは既に gh に依存しているので、認証情報もそこから導出する。
-# GitHub Actions 上では両方あらかじめ設定されているため、この行は素通りする。
+# GitHub Actions 上では両方あらかじめ設定されているため素通りする。
 export GITHUB_ACTOR="${GITHUB_ACTOR:-$(gh api user --jq .login)}"
 export GITHUB_TOKEN="${GITHUB_TOKEN:-$(gh auth token)}"
 
@@ -59,12 +55,10 @@ echo "▶ ${TAG} のリリースを開始します"
 sed -i '' "s/^version = \".*\"$/version = \"${VERSION}\"/" "$BUILD_FILE"
 echo "  version = ${VERSION} を ${BUILD_FILE} に書き込みました"
 
-# 2. XCFramework の zip と checksum
 ./gradlew ":${MODULE}:packageXCFramework"
 [ -f "$ZIP" ] || { echo "zip が生成されていません: $ZIP" >&2; exit 1; }
 CHECKSUM="$(cat "$CHECKSUM_FILE")"
 
-# 3. Android 向けの Maven publish
 ./gradlew ":${MODULE}:publishAllPublicationsToGitHubPackagesRepository"
 
 # 4. ドラフトリリースを作り、アセットを上げて API URL を得る。
@@ -88,7 +82,6 @@ done
 # GitHub 側は末尾の .zip を無視して同じバイナリを返す。
 ASSET_URL="${ASSET_URL}.zip"
 
-# 5. Package.swift を生成
 cat > Package.swift <<EOF
 // swift-tools-version: 6.0
 // このファイルは release.sh が生成する。手で編集しないこと。
@@ -109,7 +102,6 @@ let package = Package(
 )
 EOF
 
-# 6. コミットしてタグを打つ
 git add Package.swift "$BUILD_FILE"
 git commit -q -m "Release ${TAG}"
 git tag -a "$TAG" -m "${FRAMEWORK} ${VERSION}"

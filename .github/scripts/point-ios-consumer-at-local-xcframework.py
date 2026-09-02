@@ -14,7 +14,6 @@ assert core.name == "kmp-app-template", f"共通コアのディレクトリ名�
 xcframework = core / "shared/build/XCFrameworks/release/Shared.xcframework"
 assert xcframework.is_dir(), f"XCFramework が無い: {xcframework}"
 
-# 共通コアの Package.swift を、公開アセットではなく今ビルドしたものを指す形にする。
 manifest = core / "Package.swift"
 s = manifest.read_text()
 s, n = re.subn(
@@ -25,7 +24,6 @@ s, n = re.subn(
 assert n == 1, f"binaryTarget を path 指定に書き換えられなかった (n={n})"
 manifest.write_text(s)
 
-# ios 側の依存を、リモートではなくローカルの共通コアに向ける。
 ios_manifest = consumer / "Package/Package.swift"
 s = ios_manifest.read_text()
 s, n = re.subn(
@@ -36,7 +34,6 @@ s, n = re.subn(
 assert n == 1, f"ios の依存を path 指定に書き換えられなかった (n={n})"
 ios_manifest.write_text(s)
 
-# 固定された解決結果はローカル参照と噛み合わないので捨てる。
 resolved = consumer / "ios-app-template.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
 if resolved.exists():
     resolved.unlink()

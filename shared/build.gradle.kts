@@ -18,7 +18,6 @@ publishing {
         maven {
             name = "GitHubPackages"
             url = uri("https://maven.pkg.github.com/yossibank/kmp-app-template")
-            // ローカルは ~/.gradle/gradle.properties、CI は Actions の環境変数から取る。
             credentials {
                 username =
                     providers
@@ -70,17 +69,9 @@ kotlin {
     }
 }
 
-// SKIE は suspend を Swift の async throws に、Flow を AsyncSequence に、
-// sealed interface を網羅的に switch できる enum に変換する。
-// これが無いと ObjC の completionHandler と
-// SharedKotlinx_coroutines_coreFlow のような型名が iOS 側に露出する。
 skie {
     analytics {
-        // 収集・送信とも停止する。
-        // 収集内容を確認したうえでの判断: 名前はすべてハッシュ化され、
-        // 宣言数などの統計値と環境情報のみでコードの中身は含まれないが、
-        // 機種を特定できるハードウェア情報を含むため送らない。
-        // 無効化しても SKIE の変換機能には影響しない（v0.5.0 はこの設定でリリース済み）。
+        // 機種を特定できるハードウェア情報を含むため送らない。変換機能には影響しない。
         enabled.set(false)
     }
 }
