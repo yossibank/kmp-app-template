@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Show Xcode version
         run: xcodebuild -version
@@ -47,7 +47,7 @@ jobs:
       # 検証用バージョンはリモートに存在しないため、GitHub Packages の
       # 既存成果物を誤って引くことがない。
       - name: Check out the Android app
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           repository: yossibank/android-app-template
           path: consumer-android
@@ -67,7 +67,7 @@ jobs:
       # アプリが使えるかは公開後まで分からなかった。SKIE が生成する Swift の
       # API が変わる類の破壊はここでしか捕まらない。
       - name: Check out the iOS app
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           repository: yossibank/ios-app-template
           path: consumer-ios
