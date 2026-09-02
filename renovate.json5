@@ -1,0 +1,15 @@
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  extends: ["config:recommended"],
+  timezone: "Asia/Tokyo",
+  schedule: ["before 9am on monday"],
+  packageRules: [
+    {
+      matchUpdateTypes: ["major"],
+      labels: ["major"],
+    },
+  ],
+  // release.sh が生成するファイル。依存は書かれていないが、
+  // 将来 Renovate が触れる形になっても困るので対象から外す。
+  ignorePaths: ["Package.swift"],
+}
