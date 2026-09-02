@@ -62,3 +62,24 @@ jobs:
       - name: Build the Android app against the shared library
         working-directory: consumer-android
         run: ./gradlew assembleDebug testDebugUnitTest
+
+      # iOS も同じ理由で消費側まで見る。XCFramework は作られるが、それを
+      # アプリが使えるかは公開後まで分からなかった。SKIE が生成する Swift の
+      # API が変わる類の破壊はここでしか捕まらない。
+      - name: Check out the iOS app
+        uses: actions/checkout@v5
+        with:
+          repository: yossibank/ios-app-template
+          path: consumer-ios
+          token: ${{ secrets.SHARED_CORE_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Point the iOS app at the locally built XCFramework
+        run: python3 .github/scripts/point-ios-consumer-at-local-xcframework.py consumer-ios
+
+      - name: Build and test the iOS app against the shared library
+        working-directory: consumer-ios
+        run: |
+          xcodebuild test \
+            -project ios-app-template.xcodeproj \
+            -scheme ios-app-template \
+            -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
