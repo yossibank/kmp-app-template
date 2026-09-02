@@ -50,7 +50,6 @@ kotlin {
         }
     }
 
-    // iOS へは XCFramework 1 枚だけを公開する。
     val xcframework = XCFramework("Shared")
     // Apple Silicon のみを対象とするため iosX64（Intel シミュレータ）は持たない。
     listOf(

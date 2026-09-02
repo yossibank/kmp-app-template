@@ -7,7 +7,6 @@ verify:
 lint:
 	./gradlew :shared:ktlintCheck
 
-# 自動修正できるものを直す。
 format:
 	./gradlew :shared:ktlintFormat
 
@@ -19,7 +18,6 @@ build-android:
 build-ios:
 	./gradlew :shared:assembleSharedXCFramework
 
-# アプリ側から参照できるよう mavenLocal へ publish する。
 publish-local:
 	./gradlew :shared:publishToMavenLocal
 
