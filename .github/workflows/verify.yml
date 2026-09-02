@@ -40,3 +40,25 @@ jobs:
 
       - name: Verify
         run: make verify
+
+      # make verify は共通コアがコンパイルできることまでしか見ていない。
+      # publish される AAR は作られず、アプリがそれを使えるかも確認されない。
+      # ここで実際に publish し、Android アプリをそれに向けてビルドする。
+      # 検証用バージョンはリモートに存在しないため、GitHub Packages の
+      # 既存成果物を誤って引くことがない。
+      - name: Check out the Android app
+        uses: actions/checkout@v5
+        with:
+          repository: yossibank/android-app-template
+          path: consumer-android
+          token: ${{ secrets.SHARED_CORE_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Point the Android app at mavenLocal
+        run: python3 .github/scripts/point-consumer-at-maven-local.py consumer-android
+
+      - name: Publish the shared library to mavenLocal
+        run: ./gradlew :shared:publishToMavenLocal
+
+      - name: Build the Android app against the shared library
+        working-directory: consumer-android
+        run: ./gradlew assembleDebug testDebugUnitTest
