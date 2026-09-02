@@ -30,7 +30,7 @@ jobs:
       # gradle/gradle-daemon-jvm.properties が Java 25 を要求する。
       # 事前に用意しないと Gradle が foojay から自動ダウンロードして遅くなる。
       - name: Set up JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '25'
