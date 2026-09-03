@@ -42,6 +42,15 @@ jobs:
           distribution: temurin
           java-version: '25'
 
+      # 設定キャッシュはプロジェクト内の .gradle に置かれるため、Gradle home を
+      # 対象にする setup-gradle のキャッシュには含まれない。432KB と小さいので
+      # 別に持ち越す。
+      - name: Cache the Gradle configuration cache
+        uses: actions/cache@v4
+        with:
+          path: .gradle/configuration-cache
+          key: gradle-config-cache-${{ runner.os }}-${{ hashFiles('**/*.gradle.kts', 'gradle/libs.versions.toml', 'gradle.properties') }}
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
 
