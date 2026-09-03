@@ -33,15 +33,9 @@ jobs:
 
       # gradle/gradle-daemon-jvm.properties が Java 25 を要求する。
       # 事前に用意しないと Gradle が foojay から自動ダウンロードして遅くなる。
-      # macOS ランナーには Java 25 が入っておらず、setup-java が毎回 200MB 超を
-      # ダウンロードして署名検証と展開まで行う（実測 96 秒）。ツールキャッシュごと
-      # 持ち越して省く。ubuntu 側は最初から tool-cache にあるため不要。
-      - name: Cache the JDK
-        uses: actions/cache@v4
-        with:
-          path: /Users/runner/hostedtoolcache/Java_Temurin-Hotspot_jdk
-          key: jdk-temurin-25-${{ runner.os }}-${{ runner.arch }}
-
+      # macOS ランナーに Java 25 は入っていないため毎回ダウンロードされる（約 96 秒）。
+      # actions/cache でツールキャッシュを持ち越す案は実測したが、798MB の復元に
+      # 233 秒かかり逆に遅くなった。
       - name: Set up JDK
         uses: actions/setup-java@v6
         with:
