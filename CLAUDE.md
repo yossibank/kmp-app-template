@@ -26,6 +26,16 @@ iOS ターゲットのビルドには Xcode が必要。`xcode-select -p` が Co
 - `internal` を既定にする。公開するのは必要なものだけ。
 - バージョンは `gradle/libs.versions.toml` にのみ書く。build.gradle.kts に直書きしない。
 
+## CI の消費側検証
+
+共通コアの変更が両アプリを壊さないことを CI で確認している。Android は
+mavenLocal 経由でビルドとユニットテスト、iOS はビルドのみ。
+
+**iOS を `xcodebuild test` に戻すのは、`suspend` か `Flow` を公開したとき。**
+いまの公開 API は文字列を返す関数だけで、SKIE の変換を通っていない。実行時
+テストの追加コストは約 120 秒（シミュレータを事前起動しない場合は 337 秒）。
+戻す場合は `xcrun simctl boot` を先のステップに置いて起動待ちを重ねること。
+
 ## やってはいけない
 
 - `org.jetbrains.kotlin.android` を適用しない（AGP 9 でエラーになる）

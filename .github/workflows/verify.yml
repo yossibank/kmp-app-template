@@ -26,11 +26,6 @@ jobs:
       - name: Show Xcode version
         run: xcodebuild -version
 
-      # simctl boot は即座に戻るので、後続のビルド中に裏で起動が進む。
-      # iOS のテストはシミュレータの起動待ちが所要時間の大半を占める。
-      - name: Start booting the simulator
-        run: xcrun simctl boot 'iPhone 17 Pro' || true
-
       # gradle/gradle-daemon-jvm.properties が Java 25 を要求する。
       # 事前に用意しないと Gradle が foojay から自動ダウンロードして遅くなる。
       # macOS ランナーに Java 25 は入っていないため毎回ダウンロードされる（約 96 秒）。
@@ -90,11 +85,13 @@ jobs:
       - name: Point the iOS app at the locally built XCFramework
         run: python3 .github/scripts/point-ios-at-local-core.py consumer-ios
 
+      # test ではなく build。共通コアの API が変われば Swift 側のコンパイルで、
+      # シンボルが欠ければリンクで落ちる。実行時検証を足す条件は CLAUDE.md を見ること。
       # generic/platform は x86_64 スライスも要求するため使えない（Apple Silicon のみ対象）。
-      - name: Build and test the iOS app against the shared library
+      - name: Build the iOS app against the shared library
         working-directory: consumer-ios
         run: |
-          xcodebuild test \
+          xcodebuild build \
             -project ios-app-template.xcodeproj \
             -scheme ios-app-template \
             -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
