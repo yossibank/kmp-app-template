@@ -40,6 +40,7 @@ private fun apiReturning(
             )
         }
     return PokemonApi(
+        baseUrl = "https://example.test",
         client =
             HttpClient(engine) {
                 install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }

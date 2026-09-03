@@ -24,15 +24,17 @@ sealed interface PokemonListResult {
     ) : PokemonListResult
 }
 
-class PokemonApi(
-    private val baseUrl: String = "https://pokeapi.co",
-    private val client: HttpClient =
-        HttpClient {
-            install(ContentNegotiation) {
-                json(Json { ignoreUnknownKeys = true })
-            }
-        },
+/**
+ * Kotlin の引数既定値は Swift に渡らないため、iOS からは全引数を要求する
+ * イニシャライザしか見えない。Ktor の HttpClient を Swift 側で組めないので、
+ * 既定の依存だけで作れる経路を用意する。
+ */
+class PokemonApi internal constructor(
+    private val baseUrl: String,
+    private val client: HttpClient,
 ) {
+    constructor() : this(DEFAULT_BASE_URL, defaultClient())
+
     /** iOS では SKIE が async throws に変換する。 */
     suspend fun fetchPage(
         limit: Int = PAGE_SIZE,
@@ -52,5 +54,14 @@ class PokemonApi(
 
     companion object {
         const val PAGE_SIZE: Int = 20
+
+        private const val DEFAULT_BASE_URL = "https://pokeapi.co"
+
+        private fun defaultClient(): HttpClient =
+            HttpClient {
+                install(ContentNegotiation) {
+                    json(Json { ignoreUnknownKeys = true })
+                }
+            }
     }
 }

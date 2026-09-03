@@ -47,6 +47,10 @@ Ktor 1.6.7 / kotlinx-serialization 1.2.1 前提で、このプロジェクトの
 | `sealed interface` | `enum __Sealed` + `onEnum(of:)` | 変換される |
 | `Flow<T>` | `SkieSwiftFlow<T>` | **変換されない** |
 
+**Kotlin の引数既定値は Swift に渡らない。** iOS からは全引数を要求する
+イニシャライザしか見えないため、既定の依存だけで作れる経路を別に用意すること。
+`PokemonApi` は `internal constructor` と引数なしの `constructor()` に分けている。
+
 **Flow を公開 API に置かないこと。** SKIE 0.10.14 では関数・プロパティどちらでも
 変換されず、Swift 側からは生の `id<SharedFlow>` に見える。`SkieSwiftFlow` の定義自体は
 生成されるが署名の置き換えが起きない。coroutines を `api` にしても `export` しても変わらず、
