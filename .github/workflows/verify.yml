@@ -68,8 +68,13 @@ jobs:
       - name: Point the Android app at mavenLocal
         run: python3 .github/scripts/point-android-at-local-core.py consumer-android
 
+      # Android の解決に要るのは root と android の 2 つだけ。publishToMavenLocal は
+      # iOS 向けの klib も出すが、消費側検証では使わない（無くてもビルドが通ることを確認済み）。
       - name: Publish the shared library to mavenLocal
-        run: ./gradlew :shared:publishToMavenLocal
+        run: |
+          ./gradlew \
+            :shared:publishKotlinMultiplatformPublicationToMavenLocal \
+            :shared:publishAndroidPublicationToMavenLocal
 
       - name: Build the Android app against the shared library
         working-directory: consumer-android
