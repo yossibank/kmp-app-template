@@ -93,6 +93,12 @@ kotlin {
     }
 }
 
+// AGP は Kotlin ソースディレクトリの隣に baselineProfiles を探す。生成先の隣は
+// openApiGenerate の出力の中にあるため、宣言しないと暗黙の依存として弾かれる。
+tasks.matching { it.name.contains("ArtProfile") }.configureEach {
+    dependsOn(tasks.named("openApiGenerate"))
+}
+
 // 生成物は整形の対象にしない。直しても次の生成で戻る。
 // ktlint { filter { } } は KMP のソースセット用タスクに効かず、除外パターンは
 // ソースディレクトリからの相対パスに当たるため、生成先のパッケージ名で判別する。
