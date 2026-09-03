@@ -68,10 +68,13 @@ jobs:
       - name: Point the iOS app at the locally built XCFramework
         run: python3 .github/scripts/point-ios-consumer-at-local-xcframework.py consumer-ios
 
-      - name: Build and test the iOS app against the shared library
+      # test ではなく build。共通コアの API が壊れればコンパイルかリンクで落ちる。
+      # テスト実行はシミュレータの起動に 5 分以上かかり、得られるものが釣り合わない。
+      # generic/platform は x86_64 スライスも要求するため使えない（Apple Silicon のみ対象）。
+      - name: Build the iOS app against the shared library
         working-directory: consumer-ios
         run: |
-          xcodebuild test \
+          xcodebuild build \
             -project ios-app-template.xcodeproj \
             -scheme ios-app-template \
             -destination 'platform=iOS Simulator,name=iPhone 17 Pro'

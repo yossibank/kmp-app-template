@@ -1,7 +1,7 @@
 .PHONY: verify lint format build build-android build-ios publish-local publish-github test clean
 
 verify:
-	./gradlew :shared:ktlintCheck :shared:assembleSharedXCFramework :shared:allTests
+	./gradlew :shared:ktlintCheck :shared:assembleSharedReleaseXCFramework :shared:allTests
 
 lint:
 	./gradlew :shared:ktlintCheck
