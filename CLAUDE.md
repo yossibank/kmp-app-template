@@ -26,6 +26,32 @@ iOS ターゲットのビルドには Xcode が必要。`xcode-select -p` が Co
 - `internal` を既定にする。公開するのは必要なものだけ。
 - バージョンは `gradle/libs.versions.toml` にのみ書く。build.gradle.kts に直書きしない。
 
+## OpenAPI
+
+`shared/openapi/pokeapi.yml` から**モデルだけ**を生成する。HTTP クライアントは
+手書き（`PokemonApi.kt`）。openapi-generator の multiplatform テンプレートは
+Ktor 1.6.7 / kotlinx-serialization 1.2.1 前提で、このプロジェクトの Ktor 3.3.3 とは
+2 メジャー分ずれているため使わない。
+
+- 生成先のパッケージは `com.yossibank.shared.generated`。ktlint はこの名前で除外している
+- `dateLibrary` の指定は必須（multiplatform は `string` か `kotlinx-datetime` のみ）
+- 生成対象は `globalProperties` の `models` で絞る。`PokemonDetail` は 20 以上の入れ子を引き連れてくる
+
+## SKIE の変換で確認したこと
+
+実際に書いて生成物を確認した結果。
+
+| Kotlin | Swift | 結果 |
+| --- | --- | --- |
+| `suspend fun` | `func ... async throws` | 変換される |
+| `sealed interface` | `enum __Sealed` + `onEnum(of:)` | 変換される |
+| `Flow<T>` | `SkieSwiftFlow<T>` | **変換されない** |
+
+**Flow を公開 API に置かないこと。** SKIE 0.10.14 では関数・プロパティどちらでも
+変換されず、Swift 側からは生の `id<SharedFlow>` に見える。`SkieSwiftFlow` の定義自体は
+生成されるが署名の置き換えが起きない。coroutines を `api` にしても `export` しても変わらず、
+`FlowInterop` の設定項目もこのバージョンには存在しない。原因未特定。
+
 ## CI の消費側検証
 
 共通コアの変更が両アプリを壊さないことを CI で確認している。Android は

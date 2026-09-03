@@ -7,6 +7,8 @@ plugins {
     alias(libs.plugins.android.kotlin.multiplatform.library)
     alias(libs.plugins.ktlint)
     alias(libs.plugins.skie)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.openapi.generator)
     `maven-publish`
 }
 
@@ -63,10 +65,39 @@ kotlin {
     }
 
     sourceSets {
+        commonMain {
+            // 生成物をソースとして扱う。builtBy でコンパイル前に生成が走る。
+            kotlin.srcDir(
+                files(layout.buildDirectory.dir("generated/openapi/src/commonMain/kotlin"))
+                    .builtBy(tasks.named("openApiGenerate")),
+            )
+            dependencies {
+                implementation(libs.kotlinx.coroutines.core)
+                implementation(libs.kotlinx.serialization.json)
+                implementation(libs.ktor.client.core)
+                implementation(libs.ktor.client.content.negotiation)
+                implementation(libs.ktor.serialization.kotlinx.json)
+            }
+        }
+        androidMain.dependencies {
+            implementation(libs.ktor.client.okhttp)
+        }
+        iosMain.dependencies {
+            implementation(libs.ktor.client.darwin)
+        }
         commonTest.dependencies {
             implementation(kotlin("test"))
+            implementation(libs.ktor.client.mock)
+            implementation(libs.kotlinx.coroutines.test)
         }
     }
+}
+
+// 生成物は整形の対象にしない。直しても次の生成で戻る。
+// ktlint { filter { } } は KMP のソースセット用タスクに効かず、除外パターンは
+// ソースディレクトリからの相対パスに当たるため、生成先のパッケージ名で判別する。
+tasks.withType<org.jlleitschuh.gradle.ktlint.tasks.BaseKtLintCheckTask>().configureEach {
+    exclude("**/generated/**")
 }
 
 skie {
@@ -133,4 +164,34 @@ tasks.register<PackageXCFrameworkTask>("packageXCFramework") {
     xcframeworkDir.set(layout.buildDirectory.dir("XCFrameworks/release/Shared.xcframework"))
     zipFile.set(layout.buildDirectory.file("spm/Shared.xcframework.zip"))
     checksumFile.set(layout.buildDirectory.file("spm/checksum.txt"))
+}
+
+// PokéAPI の仕様からモデルだけを生成する。クライアントは生成しない。
+// openapi-generator の multiplatform テンプレートは Ktor 1.6.7 前提で、
+// このプロジェクトの Ktor 3.3.3 と 2 メジャー分ずれている。
+openApiGenerate {
+    generatorName.set("kotlin")
+    library.set("multiplatform")
+    inputSpec.set("$projectDir/openapi/pokeapi.yml")
+    outputDir.set(
+        layout.buildDirectory
+            .dir("generated/openapi")
+            .get()
+            .asFile.path,
+    )
+    modelPackage.set("com.yossibank.shared.generated.model")
+    apiPackage.set("com.yossibank.shared.generated")
+    packageName.set("com.yossibank.shared.generated")
+    globalProperties.set(
+        mapOf(
+            // 一覧に必要な 2 つだけ。PokemonDetail は 20 以上の入れ子を引き連れてくる。
+            "models" to "PaginatedPokemonSummaryList,PokemonSummary",
+        ),
+    )
+    configOptions.set(
+        mapOf(
+            // multiplatform は string か kotlinx-datetime しか受け付けない。
+            "dateLibrary" to "string",
+        ),
+    )
 }
