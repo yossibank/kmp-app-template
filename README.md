@@ -48,5 +48,5 @@ shared/src/
 | Android Gradle Plugin | 9.3.2 |
 | compileSdk | 37 |
 | minSdk | 24 |
-| iOS ターゲット | iosArm64 / iosSimulatorArm64 / iosX64 |
+| iOS ターゲット | iosArm64 / iosSimulatorArm64 |
 | Xcode | 26.x（iOS ターゲットのビルドに必要） |
