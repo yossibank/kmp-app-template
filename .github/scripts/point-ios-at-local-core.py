@@ -34,7 +34,7 @@ s, n = re.subn(
 assert n == 1, f"ios の依存を path 指定に書き換えられなかった (n={n})"
 ios_manifest.write_text(s)
 
-resolved = consumer / "ios-app-template.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
+resolved = consumer / "AppTemplate.xcworkspace/xcshareddata/swiftpm/Package.resolved"
 if resolved.exists():
     resolved.unlink()
 

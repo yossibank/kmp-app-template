@@ -92,6 +92,6 @@ jobs:
         working-directory: consumer-ios
         run: |
           xcodebuild build \
-            -project ios-app-template.xcodeproj \
-            -scheme ios-app-template \
+            -workspace AppTemplate.xcworkspace \
+            -scheme AppTemplate \
             -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
