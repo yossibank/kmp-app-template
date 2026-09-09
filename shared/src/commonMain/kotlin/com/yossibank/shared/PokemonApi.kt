@@ -7,6 +7,7 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.serialization.kotlinx.json.json
+import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.Json
 import com.yossibank.shared.generated.model.PaginatedPokemonSummaryList as ListResponse
 
@@ -46,6 +47,8 @@ class PokemonApi internal constructor(
                 parameter("offset", offset)
             }.body()
         PokemonListResult.Loaded(response.results, response.next != null)
+    } catch (e: CancellationException) {
+        throw e
     } catch (e: Exception) {
         PokemonListResult.Failed(e.message ?: "unknown error")
     }
