@@ -31,37 +31,33 @@ private fun apiReturning(
     body: String,
     status: HttpStatusCode = HttpStatusCode.OK,
 ): PokemonApi {
-    val engine =
-        MockEngine {
-            respond(
-                content = body,
-                status = status,
-                headers = headersOf("Content-Type", ContentType.Application.Json.toString()),
-            )
-        }
+    val engine = MockEngine {
+        respond(
+            content = body,
+            status = status,
+            headers = headersOf("Content-Type", ContentType.Application.Json.toString()),
+        )
+    }
     return PokemonApi(
         baseUrl = "https://example.test",
-        client =
-            HttpClient(engine) {
-                install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
-            },
+        client = HttpClient(engine) {
+            install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
+        },
     )
 }
 
 class PokemonApiTest {
     @Test
-    fun fetchPage_maps_the_response_into_a_loaded_result() =
-        runTest {
-            val result = apiReturning(PAGE_JSON).fetchPage()
-            val loaded = assertIs<PokemonListResult.Loaded>(result)
-            assertEquals(listOf("bulbasaur", "ivysaur"), loaded.pokemon.map { it.name })
-            assertTrue(loaded.hasMore, "next があるので続きがある")
-        }
+    fun fetchPage_maps_the_response_into_a_loaded_result() = runTest {
+        val result = apiReturning(PAGE_JSON).fetchPage()
+        val loaded = assertIs<PokemonListResult.Loaded>(result)
+        assertEquals(listOf("bulbasaur", "ivysaur"), loaded.pokemon.map { it.name })
+        assertTrue(loaded.hasMore, "next があるので続きがある")
+    }
 
     @Test
-    fun fetchPage_reports_a_failure_instead_of_throwing() =
-        runTest {
-            val result = apiReturning("not json", HttpStatusCode.InternalServerError).fetchPage()
-            assertIs<PokemonListResult.Failed>(result)
-        }
+    fun fetchPage_reports_a_failure_instead_of_throwing() = runTest {
+        val result = apiReturning("not json", HttpStatusCode.InternalServerError).fetchPage()
+        assertIs<PokemonListResult.Failed>(result)
+    }
 }

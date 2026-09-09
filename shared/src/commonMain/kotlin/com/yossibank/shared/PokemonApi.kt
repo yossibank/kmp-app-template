@@ -39,29 +39,26 @@ class PokemonApi internal constructor(
     suspend fun fetchPage(
         limit: Int = PAGE_SIZE,
         offset: Int = 0,
-    ): PokemonListResult =
-        try {
-            val response: ListResponse =
-                client
-                    .get("$baseUrl/api/v2/pokemon/") {
-                        parameter("limit", limit)
-                        parameter("offset", offset)
-                    }.body()
-            PokemonListResult.Loaded(response.results, response.next != null)
-        } catch (e: Exception) {
-            PokemonListResult.Failed(e.message ?: "unknown error")
-        }
+    ): PokemonListResult = try {
+        val response: ListResponse = client
+            .get("$baseUrl/api/v2/pokemon/") {
+                parameter("limit", limit)
+                parameter("offset", offset)
+            }.body()
+        PokemonListResult.Loaded(response.results, response.next != null)
+    } catch (e: Exception) {
+        PokemonListResult.Failed(e.message ?: "unknown error")
+    }
 
     companion object {
         const val PAGE_SIZE: Int = 20
 
         private const val DEFAULT_BASE_URL = "https://pokeapi.co"
 
-        private fun defaultClient(): HttpClient =
-            HttpClient {
-                install(ContentNegotiation) {
-                    json(Json { ignoreUnknownKeys = true })
-                }
+        private fun defaultClient(): HttpClient = HttpClient {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true })
             }
+        }
     }
 }

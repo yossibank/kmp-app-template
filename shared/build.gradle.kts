@@ -21,16 +21,14 @@ publishing {
             name = "GitHubPackages"
             url = uri("https://maven.pkg.github.com/yossibank/kmp-app-template")
             credentials {
-                username =
-                    providers
-                        .gradleProperty("gpr.user")
-                        .orElse(providers.environmentVariable("GITHUB_ACTOR"))
-                        .orNull
-                password =
-                    providers
-                        .gradleProperty("gpr.token")
-                        .orElse(providers.environmentVariable("GITHUB_TOKEN"))
-                        .orNull
+                username = providers
+                    .gradleProperty("gpr.user")
+                    .orElse(providers.environmentVariable("GITHUB_ACTOR"))
+                    .orNull
+                password = providers
+                    .gradleProperty("gpr.token")
+                    .orElse(providers.environmentVariable("GITHUB_TOKEN"))
+                    .orNull
             }
         }
     }
@@ -72,11 +70,7 @@ kotlin {
                     .builtBy(tasks.named("openApiGenerate")),
             )
             dependencies {
-                implementation(libs.kotlinx.coroutines.core)
-                implementation(libs.kotlinx.serialization.json)
-                implementation(libs.ktor.client.core)
-                implementation(libs.ktor.client.content.negotiation)
-                implementation(libs.ktor.serialization.kotlinx.json)
+                implementation(libs.bundles.common)
             }
         }
         androidMain.dependencies {
@@ -87,8 +81,7 @@ kotlin {
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
-            implementation(libs.ktor.client.mock)
-            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.bundles.test)
         }
     }
 }
