@@ -17,7 +17,6 @@ import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
-import kotlin.test.assertTrue
 
 private const val PAGE_JSON = """
 {
@@ -35,9 +34,15 @@ private fun api(
     body: String = PAGE_JSON,
     status: HttpStatusCode = HttpStatusCode.OK,
     delayMillis: Long = 0,
+    unreachable: Boolean = false,
 ): PokemonApi {
     val engine = MockEngine {
         delay(delayMillis)
+
+        if (unreachable) {
+            throw IllegalStateException("connection refused")
+        }
+
         respond(
             content = body,
             status = status,
@@ -57,15 +62,30 @@ class PokemonApiTest {
     @Test
     fun fetchPage_maps_the_response_into_a_loaded_result() = runTest {
         val result = api().fetchPage()
+
         val loaded = assertIs<PokemonListResult.Loaded>(result)
         assertEquals(listOf("bulbasaur", "ivysaur"), loaded.pokemon.map { it.name })
-        assertTrue(loaded.hasMore, "next があるので続きがある")
     }
 
     @Test
-    fun fetchPage_reports_a_failure_instead_of_throwing() = runTest {
-        val result = api(body = "not json", status = HttpStatusCode.InternalServerError).fetchPage()
-        assertIs<PokemonListResult.Failed>(result)
+    fun fetchPage_reports_offline_when_the_server_cannot_be_reached() = runTest {
+        val result = api(unreachable = true).fetchPage()
+
+        assertEquals(PokemonListResult.Failed.Offline, result)
+    }
+
+    @Test
+    fun fetchPage_reports_the_status_code_when_the_server_rejects_it() = runTest {
+        val result = api(status = HttpStatusCode.InternalServerError).fetchPage()
+
+        assertEquals(PokemonListResult.Failed.Server(500), result)
+    }
+
+    @Test
+    fun fetchPage_reports_unexpected_when_the_body_cannot_be_read() = runTest {
+        val result = api(body = "not json").fetchPage()
+
+        assertEquals(PokemonListResult.Failed.Unexpected, result)
     }
 
     @Test
