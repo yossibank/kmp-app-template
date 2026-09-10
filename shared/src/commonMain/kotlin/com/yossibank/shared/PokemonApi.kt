@@ -49,19 +49,20 @@ sealed interface PokemonListResult {
             ReplaceWith("this"),
         )
         val message: String
-            get() =
-                when (this) {
-                    is Offline -> "offline"
-                    is Server -> "server error $statusCode"
-                    is Unexpected -> "unexpected error"
-                    is Legacy -> legacyMessage
-                }
+            @Suppress("DEPRECATION")
+            get() = when (this) {
+                is Offline -> "offline"
+                is Server -> "server error $statusCode"
+                is Unexpected -> "unexpected error"
+                is Legacy -> legacyMessage
+            }
 
         companion object {
             @Deprecated(
                 "Offline / Server / Unexpected を使う。0.9.0 で削除",
                 ReplaceWith("PokemonListResult.Failed.Legacy(message)"),
             )
+            @Suppress("DEPRECATION")
             operator fun invoke(message: String): Failed = Legacy(message)
         }
     }
@@ -83,17 +84,16 @@ class PokemonApi internal constructor(
         limit: Int = PAGE_SIZE,
         offset: Int = 0,
     ): PokemonListResult {
-        val response =
-            try {
-                client.get("$baseUrl/api/v2/pokemon/") {
-                    parameter("limit", limit)
-                    parameter("offset", offset)
-                }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                return PokemonListResult.Failed.Offline
+        val response = try {
+            client.get("$baseUrl/api/v2/pokemon/") {
+                parameter("limit", limit)
+                parameter("offset", offset)
             }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            return PokemonListResult.Failed.Offline
+        }
 
         if (!response.status.isSuccess()) {
             return PokemonListResult.Failed.Server(response.status.value)
