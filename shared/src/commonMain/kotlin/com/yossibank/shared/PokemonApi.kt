@@ -18,8 +18,6 @@ import com.yossibank.shared.generated.model.PaginatedPokemonSummaryList as ListR
 sealed interface PokemonListResult {
     data class Loaded(
         val pokemon: List<PokemonSummary>,
-        @property:Deprecated("ページングは未実装。0.9.0 で削除")
-        val hasMore: Boolean = false,
     ) : PokemonListResult
 
     /**
@@ -37,34 +35,6 @@ sealed interface PokemonListResult {
 
         /** 応答を解釈できない。再試行しても直らない。 */
         data object Unexpected : Failed
-
-        /** 分類を持たない旧 API のための経過措置。0.9.0 で削除。 */
-        @Deprecated("Offline / Server / Unexpected を使う。0.9.0 で削除")
-        data class Legacy(
-            val legacyMessage: String,
-        ) : Failed
-
-        @Deprecated(
-            "分類で分岐する。0.9.0 で削除",
-            ReplaceWith("this"),
-        )
-        val message: String
-            @Suppress("DEPRECATION")
-            get() = when (this) {
-                is Offline -> "offline"
-                is Server -> "server error $statusCode"
-                is Unexpected -> "unexpected error"
-                is Legacy -> legacyMessage
-            }
-
-        companion object {
-            @Deprecated(
-                "Offline / Server / Unexpected を使う。0.9.0 で削除",
-                ReplaceWith("PokemonListResult.Failed.Legacy(message)"),
-            )
-            @Suppress("DEPRECATION")
-            operator fun invoke(message: String): Failed = Legacy(message)
-        }
     }
 }
 
