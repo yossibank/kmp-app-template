@@ -18,6 +18,7 @@ import com.yossibank.shared.generated.model.PaginatedPokemonSummaryList as ListR
 sealed interface PokemonListResult {
     data class Loaded(
         val pokemon: List<PokemonSummary>,
+        val hasMore: Boolean,
     ) : PokemonListResult
 
     /**
@@ -70,7 +71,8 @@ class PokemonApi internal constructor(
         }
 
         return try {
-            PokemonListResult.Loaded(response.body<ListResponse>().results)
+            val page = response.body<ListResponse>()
+            PokemonListResult.Loaded(page.results, hasMore = page.next != null)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
