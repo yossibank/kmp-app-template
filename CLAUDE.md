@@ -50,7 +50,8 @@ shared/openapi/           モデル生成の元にする OpenAPI 定義
 ## 全体ルール
 
 - 変更したら `make verify` を通す。通らないものは完了ではない。
-- 公開 API を 1 リリースで壊さない。`@Deprecated` を挟み、消費側 2 リポジトリが乗り換えてから消す。
+- 公開 API を壊すときは、消費側 2 リポジトリを同じ作業時間に更新する。kmp を push してから
+  消費側を push し終えるまで kmp の CI は赤い。`@Deprecated` を挟んで猶予を作らない。
 - publish 済みのバージョンを再 publish しない（GitHub Packages は 409 を返す）。
 - バージョンを `gradle/libs.versions.toml` 以外で指定しない。
 - `org.jetbrains.kotlin.android` を適用しない。`com.android.kotlin.multiplatform.library` を使う。
