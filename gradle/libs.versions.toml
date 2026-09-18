@@ -1,6 +1,6 @@
 [versions]
 agp = "9.4.0"
-kotlin = "2.4.10"
+kotlin = "2.4.20"
 ktlint = "14.2.0"
 openapi = "7.25.0"
 skie = "0.10.14"
