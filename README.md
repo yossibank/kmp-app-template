@@ -62,6 +62,16 @@ Package.swift               # iOS から SPM で参照するための宣言
 | `make publish-local` | mavenLocal へ publish（アプリ側から参照するため） |
 | `make publish-github` | GitHub Packages へ publish（`gpr.user` / `gpr.token` が必要） |
 
+## リリース
+
+GitHub Actions の **Release** ワークフローを実行し、バージョンを semver で渡す。
+XCFramework のビルド、GitHub Packages への publish、リリース作成、`Package.swift` の生成、
+コミットとタグまでを 1 回で行う。手元の Xcode 設定に左右されない。
+
+同じ手順を手元で実行する `release.sh` も残してある。引数は同じ。
+
+リリース後は消費側 2 リポジトリのバージョン指定を更新する。
+
 ## 環境
 
 | 項目 | バージョン |

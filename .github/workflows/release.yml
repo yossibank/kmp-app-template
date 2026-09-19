@@ -1,0 +1,47 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'リリースするバージョン（semver、例: 0.11.0）'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  packages: write
+
+env:
+  DEVELOPER_DIR: /Applications/Xcode.app
+
+jobs:
+  release:
+    name: Publish
+    runs-on: macos-26
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up JDK
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      # release.sh がコミットとタグを作るため、作者が要る。
+      - name: Identify the committer
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+      # 入力を run: に直接展開しない。シェルに解釈される前に環境変数へ渡す。
+      - name: Release
+        env:
+          VERSION: ${{ inputs.version }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./release.sh "$VERSION"
