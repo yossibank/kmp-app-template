@@ -26,16 +26,28 @@ sealed interface PokemonListResult {
      * iOS では onEnum(of:) が 2 段目にも生成される。
      */
     sealed interface Failed : PokemonListResult {
-        /** サーバーに到達できない。再試行で回復しうる。 */
-        data object Offline : Failed
+        /**
+         * 再試行で回復しうるか。文言と違って消費側の裁量ではない。
+         * 分類を増やしたときに消費側ごとに判断が割れるのを防ぐため、ここで決める。
+         */
+        val canRetry: Boolean
 
-        /** 到達したが 2xx 以外。再試行で回復しうる。 */
+        /** サーバーに到達できない。 */
+        data object Offline : Failed {
+            override val canRetry = true
+        }
+
+        /** 到達したが 2xx 以外。 */
         data class Server(
             val statusCode: Int,
-        ) : Failed
+        ) : Failed {
+            override val canRetry = true
+        }
 
-        /** 応答を解釈できない。再試行しても直らない。 */
-        data object Unexpected : Failed
+        /** 応答を解釈できない。 */
+        data object Unexpected : Failed {
+            override val canRetry = false
+        }
     }
 }
 

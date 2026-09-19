@@ -16,7 +16,9 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertTrue
 
 private const val PAGE_JSON = """
 {
@@ -72,6 +74,7 @@ class PokemonApiTest {
         val result = api(unreachable = true).fetchPage()
 
         assertEquals(PokemonListResult.Failed.Offline, result)
+        assertTrue(PokemonListResult.Failed.Offline.canRetry)
     }
 
     @Test
@@ -79,6 +82,7 @@ class PokemonApiTest {
         val result = api(status = HttpStatusCode.InternalServerError).fetchPage()
 
         assertEquals(PokemonListResult.Failed.Server(500), result)
+        assertTrue(PokemonListResult.Failed.Server(500).canRetry)
     }
 
     @Test
@@ -86,6 +90,7 @@ class PokemonApiTest {
         val result = api(body = "not json").fetchPage()
 
         assertEquals(PokemonListResult.Failed.Unexpected, result)
+        assertFalse(PokemonListResult.Failed.Unexpected.canRetry)
     }
 
     @Test
