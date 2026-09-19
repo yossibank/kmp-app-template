@@ -85,13 +85,9 @@ jobs:
       - name: Point the iOS app at the locally built XCFramework
         run: python3 .github/scripts/point-ios-at-local-core.py consumer-ios
 
-      # test ではなく build。共通コアの API が変われば Swift 側のコンパイルで、
-      # シンボルが欠ければリンクで落ちる。実行時検証を足す条件は CLAUDE.md を見ること。
-      # generic/platform は x86_64 スライスも要求するため使えない（Apple Silicon のみ対象）。
-      - name: Build the iOS app against the shared library
+      # Android 側と同じく実行まで見る。build だけでは 0.8.0 の変更が通り抜け、
+      # 消費側の CI で初めて落ちた。消費側の make を呼ぶので、宛先の機種は
+      # 向こうが決める（ランナーの Xcode に存在する機種が選ばれる）。
+      - name: Test the iOS app against the shared library
         working-directory: consumer-ios
-        run: |
-          xcodebuild build \
-            -workspace AppTemplate.xcworkspace \
-            -scheme AppTemplate \
-            -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
+        run: make test build
