@@ -13,7 +13,7 @@ plugins {
 }
 
 group = "com.yossibank"
-version = "0.11.0"
+version = "0.12.0"
 
 publishing {
     repositories {
@@ -181,8 +181,40 @@ openApiGenerate {
     packageName.set("com.yossibank.shared.generated")
     globalProperties.set(
         mapOf(
-            // 一覧に必要な 2 つだけ。PokemonDetail は 20 以上の入れ子を引き連れてくる。
-            "models" to "PaginatedPokemonSummaryList,PokemonSummary",
+            // PokemonDetail の参照をたどった推移閉包。1 つでも欠けると生成物が
+            // 未定義の型を参照してコンパイルが通らない。
+            // pokemon-species は生成しない。仕様が evolves_from_species と habitat を
+            // 非 null と宣言しているが実際は null が返り、生成モデルでは復号できない。
+            "models" to listOf(
+                "AbilitySummary",
+                "GenerationSummary",
+                "MoveLearnMethodSummary",
+                "MoveSummary",
+                "PaginatedPokemonSummaryList",
+                "PokemonAbility",
+                "PokemonAbilityPast",
+                "PokemonCries",
+                "PokemonDetail",
+                "PokemonFormSummary",
+                "PokemonGameIndex",
+                "PokemonHeldItem",
+                "PokemonHeldItemVersion",
+                "PokemonMove",
+                "PokemonMoveVersionGroup",
+                "PokemonPastAbility",
+                "PokemonPastStat",
+                "PokemonPastType",
+                "PokemonSpeciesSummary",
+                "PokemonSprites",
+                "PokemonStat",
+                "PokemonSummary",
+                "PokemonType",
+                "StatSummary",
+                "TypePokemon",
+                "TypeSummary",
+                "VersionGroupSummary",
+                "VersionSummary",
+            ).joinToString(","),
         ),
     )
     configOptions.set(

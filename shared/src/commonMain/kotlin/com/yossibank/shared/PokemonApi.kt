@@ -1,5 +1,6 @@
 package com.yossibank.shared
 
+import com.yossibank.shared.generated.model.PokemonDetail
 import com.yossibank.shared.generated.model.PokemonSummary
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -12,33 +13,47 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.Json
 import com.yossibank.shared.generated.model.PaginatedPokemonSummaryList as ListResponse
 
-sealed interface PokemonListResult {
+sealed interface PokemonListFailure {
+    /**
+     * 文言と違って消費側の裁量ではない。分類を増やしたときに
+     * 消費側ごとに判断が割れるのを防ぐため、ここで決める。
+     */
+    val canRetry: Boolean
+
+    data object Offline : PokemonListFailure {
+        override val canRetry = true
+    }
+
+    data class Server(
+        val statusCode: Int,
+    ) : PokemonListFailure {
+        override val canRetry = true
+    }
+
+    data object Unexpected : PokemonListFailure {
+        override val canRetry = false
+    }
+}
+
+/**
+ * 失敗しても pokemon には直前までの累積が入る。消費側が「失敗したら前の値を残す」
+ * を各自で実装すると OS ごとにずれるため、ここで一本化する。
+ */
+data class PokemonListResult(
+    val pokemon: List<PokemonEntry>,
+    val hasMore: Boolean,
+    val failure: PokemonListFailure?,
+)
+
+internal sealed interface PokemonPageResult {
     data class Loaded(
         val pokemon: List<PokemonSummary>,
         val hasMore: Boolean,
-    ) : PokemonListResult
+    ) : PokemonPageResult
 
-    sealed interface Failed : PokemonListResult {
-        /**
-         * 再試行で回復しうるか。文言と違って消費側の裁量ではない。
-         * 分類を増やしたときに消費側ごとに判断が割れるのを防ぐため、ここで決める。
-         */
-        val canRetry: Boolean
-
-        data object Offline : Failed {
-            override val canRetry = true
-        }
-
-        data class Server(
-            val statusCode: Int,
-        ) : Failed {
-            override val canRetry = true
-        }
-
-        data object Unexpected : Failed {
-            override val canRetry = false
-        }
-    }
+    data class Failed(
+        val reason: PokemonListFailure,
+    ) : PokemonPageResult
 }
 
 /**
@@ -52,10 +67,10 @@ class PokemonApi internal constructor(
 ) {
     constructor() : this(DEFAULT_BASE_URL, defaultClient())
 
-    suspend fun fetchPage(
+    internal suspend fun fetchPage(
         limit: Int = PAGE_SIZE,
         offset: Int = 0,
-    ): PokemonListResult {
+    ): PokemonPageResult {
         val response = try {
             client.get("$baseUrl/api/v2/pokemon/") {
                 parameter("limit", limit)
@@ -64,21 +79,39 @@ class PokemonApi internal constructor(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            return PokemonListResult.Failed.Offline
+            return PokemonPageResult.Failed(PokemonListFailure.Offline)
         }
 
         if (!response.status.isSuccess()) {
-            return PokemonListResult.Failed.Server(response.status.value)
+            return PokemonPageResult.Failed(PokemonListFailure.Server(response.status.value))
         }
 
         return try {
             val page = response.body<ListResponse>()
-            PokemonListResult.Loaded(page.results, hasMore = page.next != null)
+            PokemonPageResult.Loaded(page.results, hasMore = page.next != null)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            PokemonListResult.Failed.Unexpected
+            PokemonPageResult.Failed(PokemonListFailure.Unexpected)
         }
+    }
+
+    internal suspend fun fetchDetail(id: Int): PokemonDetail? = optional("$baseUrl/api/v2/pokemon/$id/")
+
+    internal suspend fun fetchSpecies(id: Int): PokemonSpecies? = optional("$baseUrl/api/v2/pokemon-species/$id/")
+
+    private suspend inline fun <reified T> optional(url: String): T? = try {
+        val response = client.get(url)
+
+        if (response.status.isSuccess()) {
+            response.body<T>()
+        } else {
+            null
+        }
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        null
     }
 
     companion object {
