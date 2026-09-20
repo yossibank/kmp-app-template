@@ -64,7 +64,6 @@ kotlin {
 
     sourceSets {
         commonMain {
-            // 生成物をソースとして扱う。builtBy でコンパイル前に生成が走る。
             kotlin.srcDir(
                 files(layout.buildDirectory.dir("generated/openapi/src/commonMain/kotlin"))
                     .builtBy(tasks.named("openApiGenerate")),
@@ -106,7 +105,6 @@ skie {
     }
 }
 
-// SPM の binaryTarget が要求する zip と checksum を生成する。
 // XCFramework 自体は Kotlin プラグインの assembleSharedReleaseXCFramework が作るので、
 // xcodebuild -create-xcframework を自前で呼ぶ必要はない。
 abstract class PackageXCFrameworkTask : DefaultTask() {
@@ -167,7 +165,7 @@ tasks.register<PackageXCFrameworkTask>("packageXCFramework") {
 
 // PokéAPI の仕様からモデルだけを生成する。クライアントは生成しない。
 // openapi-generator の multiplatform テンプレートは Ktor 1.6.7 前提で、
-// このプロジェクトの Ktor 3.3.3 と 2 メジャー分ずれている。
+// このプロジェクトが使う Ktor とはメジャーバージョンが離れている。
 openApiGenerate {
     generatorName.set("kotlin")
     library.set("multiplatform")

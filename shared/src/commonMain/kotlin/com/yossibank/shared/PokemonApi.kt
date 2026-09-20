@@ -12,19 +12,12 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.Json
 import com.yossibank.shared.generated.model.PaginatedPokemonSummaryList as ListResponse
 
-/**
- * 一覧の取得結果。iOS では SKIE が網羅的に switch できる enum に変換する。
- */
 sealed interface PokemonListResult {
     data class Loaded(
         val pokemon: List<PokemonSummary>,
         val hasMore: Boolean,
     ) : PokemonListResult
 
-    /**
-     * 失敗の分類。文言は消費側が決める。
-     * iOS では onEnum(of:) が 2 段目にも生成される。
-     */
     sealed interface Failed : PokemonListResult {
         /**
          * 再試行で回復しうるか。文言と違って消費側の裁量ではない。
@@ -32,19 +25,16 @@ sealed interface PokemonListResult {
          */
         val canRetry: Boolean
 
-        /** サーバーに到達できない。 */
         data object Offline : Failed {
             override val canRetry = true
         }
 
-        /** 到達したが 2xx 以外。 */
         data class Server(
             val statusCode: Int,
         ) : Failed {
             override val canRetry = true
         }
 
-        /** 応答を解釈できない。 */
         data object Unexpected : Failed {
             override val canRetry = false
         }
@@ -62,7 +52,6 @@ class PokemonApi internal constructor(
 ) {
     constructor() : this(DEFAULT_BASE_URL, defaultClient())
 
-    /** iOS では SKIE が async throws に変換する。 */
     suspend fun fetchPage(
         limit: Int = PAGE_SIZE,
         offset: Int = 0,

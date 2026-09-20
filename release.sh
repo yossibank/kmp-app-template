@@ -2,14 +2,6 @@
 #
 #   ./release.sh 0.3.0
 #
-# 実行すると次が起きる:
-#   1. shared/build.gradle.kts の version を書き換える
-#   2. XCFramework を zip 化し checksum を算出する
-#   3. Android 向けに GitHub Packages へ publish する
-#   4. XCFramework を GitHub Release のアセットとして上げる
-#   5. Package.swift をそのアセットの URL と checksum で生成する
-#   6. コミットしてタグを打ち、リリースを公開する
-#
 set -euo pipefail
 
 MODULE="shared"
@@ -50,8 +42,8 @@ export GITHUB_TOKEN="${GITHUB_TOKEN:-$(gh auth token)}"
 
 echo "▶ ${TAG} のリリースを開始します"
 
-# 1. version を先に確定させる。
-#    このあとの publish がこの値を読むので、ビルドより前でなければならない。
+# version を先に確定させる。このあとの publish がこの値を読むので、
+# ビルドより前でなければならない。
 sed -i '' "s/^version = \".*\"$/version = \"${VERSION}\"/" "$BUILD_FILE"
 echo "  version = ${VERSION} を ${BUILD_FILE} に書き込みました"
 
@@ -61,9 +53,8 @@ CHECKSUM="$(cat "$CHECKSUM_FILE")"
 
 ./gradlew ":${MODULE}:publishAllPublicationsToGitHubPackagesRepository"
 
-# 4. ドラフトリリースを作り、アセットを上げて API URL を得る。
-#    ドラフトならタグがまだ無くても作れるので、
-#    「アセットの URL が確定しないと Package.swift を書けない」順序の循環を避けられる。
+# ドラフトならタグがまだ無くても作れるので、「アセットの URL が確定しないと
+# Package.swift を書けない」順序の循環を避けられる。
 cleanup_draft() { gh release delete "$TAG" --yes >/dev/null 2>&1 || true; }
 trap cleanup_draft ERR
 
