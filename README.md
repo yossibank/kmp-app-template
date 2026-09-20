@@ -74,12 +74,10 @@ XCFramework のビルド、GitHub Packages への publish、リリース作成�
 
 ## 環境
 
-| 項目 | バージョン |
+| 項目 | 出所 |
 | --- | --- |
-| Gradle | 9.7.1 |
-| Kotlin | 2.4.10 |
-| Android Gradle Plugin | 9.4.0 |
-| compileSdk | 37 |
-| minSdk | 24 |
-| iOS ターゲット | iosArm64 / iosSimulatorArm64 |
-| Xcode | 26.x（iOS ターゲットのビルドに必要） |
+| Kotlin・AGP・SKIE・Ktor・依存 | [gradle/libs.versions.toml](gradle/libs.versions.toml) |
+| Gradle | [gradle/wrapper/gradle-wrapper.properties](gradle/wrapper/gradle-wrapper.properties) |
+| compileSdk / minSdk・JVM ターゲット・iOS ターゲット | [shared/build.gradle.kts](shared/build.gradle.kts) |
+| JDK（CI） | [.github/workflows/verify.yml](.github/workflows/verify.yml) |
+| Xcode | リポジトリでは固定していない。CI は [verify.yml](.github/workflows/verify.yml) のランナー任せ |

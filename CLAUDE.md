@@ -18,7 +18,7 @@ ios-app-template・android-app-template と合わせた 3 リポジトリ構成�
 | テスト | kotlin.test（`commonTest`） |
 | 依存管理 | Gradle（バージョンカタログ） |
 
-バージョンは [README.md](README.md)。
+バージョンは [gradle/libs.versions.toml](gradle/libs.versions.toml)。
 
 ## プロジェクト構成
 
