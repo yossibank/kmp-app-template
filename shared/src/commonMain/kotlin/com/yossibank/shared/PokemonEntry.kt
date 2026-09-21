@@ -78,16 +78,25 @@ data class PokemonBaseStat(
     val value: Int,
 )
 
+sealed interface PokemonEntryDetail {
+    data class Loaded(
+        val spriteUrl: String?,
+        val types: List<PokemonTypeKind>,
+        val baseStats: List<PokemonBaseStat>,
+    ) : PokemonEntryDetail {
+        val totalBaseStat: Int = baseStats.sumOf { it.value }
+    }
+
+    data class Missing(
+        val failure: PokemonFailure,
+    ) : PokemonEntryDetail
+}
+
 data class PokemonEntry(
     val id: Int,
     val name: String,
-    val hasDetail: Boolean,
-    val spriteUrl: String?,
-    val types: List<PokemonTypeKind>,
-    val baseStats: List<PokemonBaseStat>,
+    val detail: PokemonEntryDetail,
 ) {
-    val totalBaseStat: Int = baseStats.sumOf { it.value }
-
     internal companion object {
         fun idOf(summary: PokemonSummary): Int? = summary.url
             .trimEnd('/')
@@ -97,13 +106,11 @@ data class PokemonEntry(
         fun nameOnly(
             id: Int,
             summary: PokemonSummary,
+            failure: PokemonFailure,
         ): PokemonEntry = PokemonEntry(
             id = id,
             name = summary.name,
-            hasDetail = false,
-            spriteUrl = null,
-            types = emptyList(),
-            baseStats = emptyList(),
+            detail = PokemonEntryDetail.Missing(failure),
         )
 
         fun from(
@@ -113,17 +120,18 @@ data class PokemonEntry(
         ): PokemonEntry = PokemonEntry(
             id = id,
             name = summary.name,
-            hasDetail = true,
-            spriteUrl = detail.sprites.frontDefault,
-            types = detail.types
-                .sortedBy { it.slot }
-                .map { PokemonTypeKind.from(it.type.name) },
-            baseStats = detail.stats.map {
-                PokemonBaseStat(
-                    kind = PokemonStatKind.from(it.stat.name),
-                    value = it.baseStat,
-                )
-            },
+            detail = PokemonEntryDetail.Loaded(
+                spriteUrl = detail.sprites.frontDefault,
+                types = detail.types
+                    .sortedBy { it.slot }
+                    .map { PokemonTypeKind.from(it.type.name) },
+                baseStats = detail.stats.map {
+                    PokemonBaseStat(
+                        kind = PokemonStatKind.from(it.stat.name),
+                        value = it.baseStat,
+                    )
+                },
+            ),
         )
     }
 }

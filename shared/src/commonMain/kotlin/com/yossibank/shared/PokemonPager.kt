@@ -5,7 +5,9 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.sync.withPermit
 
 class PokemonPager internal constructor(
     private val api: PokemonApi,
@@ -16,11 +18,12 @@ class PokemonPager internal constructor(
     private val loadMutex = Mutex()
     private val stateMutex = Mutex()
     private val loaded = mutableListOf<PokemonEntry>()
+    private var nextOffset = 0
     private var exhausted = false
     private var generation = 0
 
     suspend fun loadNext(): PokemonListResult = loadMutex.withLock {
-        val start = stateMutex.withLock { Snapshot(loaded.size, exhausted, generation) }
+        val start = stateMutex.withLock { Snapshot(nextOffset, exhausted, generation) }
 
         if (start.exhausted) {
             return@withLock stateMutex.withLock { loaded() }
@@ -33,6 +36,7 @@ class PokemonPager internal constructor(
                 stateMutex.withLock {
                     if (start.generation == generation) {
                         loaded += entries
+                        nextOffset += page.value.pokemon.size
                         exhausted = !page.value.hasMore
                     }
                     loaded()
@@ -45,6 +49,7 @@ class PokemonPager internal constructor(
 
     suspend fun reset() = stateMutex.withLock {
         loaded.clear()
+        nextOffset = 0
         exhausted = false
         generation += 1
     }
@@ -63,14 +68,18 @@ class PokemonPager internal constructor(
     )
 
     private suspend fun enrich(summaries: List<PokemonSummary>): List<PokemonEntry> = coroutineScope {
+        val gate = Semaphore(DETAIL_CONCURRENCY)
+
         summaries
             .map { summary ->
                 async {
                     val id = PokemonEntry.idOf(summary) ?: return@async null
 
-                    when (val detail = api.fetchDetail(id)) {
-                        is FetchOutcome.Ok -> PokemonEntry.from(id, summary, detail.value)
-                        is FetchOutcome.Err -> PokemonEntry.nameOnly(id, summary)
+                    gate.withPermit {
+                        when (val detail = api.fetchDetail(id)) {
+                            is FetchOutcome.Ok -> PokemonEntry.from(id, summary, detail.value)
+                            is FetchOutcome.Err -> PokemonEntry.nameOnly(id, summary, detail.reason)
+                        }
                     }
                 }
             }.awaitAll()
@@ -85,5 +94,7 @@ class PokemonPager internal constructor(
 
     companion object {
         const val PREFETCH_DISTANCE: Int = 3
+
+        internal const val DETAIL_CONCURRENCY: Int = 6
     }
 }

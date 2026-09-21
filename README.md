@@ -38,6 +38,7 @@ flowchart LR
 ```
 shared/
 ├── build.gradle.kts        # ターゲット・配布・SKIE・モデル生成の設定
+├── api/                    # 公開 API のダンプ（差分が出たら消費側が壊れる）
 ├── openapi/                # モデル生成の元にする定義
 └── src/
     ├── commonMain/kotlin/  # 共通ロジック
@@ -59,6 +60,7 @@ Package.swift               # iOS から SPM で参照するための宣言
 | `make test` | 全ターゲットのテスト |
 | `make lint` | ktlint によるチェック（`make verify` に含まれる） |
 | `make format` | ktlint で自動修正 |
+| `make api` | 公開 API のダンプ（`shared/api/`）を更新する。`make verify` は差分があると落ちる |
 | `make publish-local` | mavenLocal へ publish（アプリ側から参照するため） |
 | `make publish-github` | GitHub Packages へ publish（`gpr.user` / `gpr.token` が必要） |
 

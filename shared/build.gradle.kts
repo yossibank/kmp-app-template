@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 import java.io.ByteArrayOutputStream
 
@@ -35,6 +36,13 @@ publishing {
 }
 
 kotlin {
+    @OptIn(ExperimentalAbiValidation::class)
+    abiValidation {
+        filters {
+            exclude.byNames.add("com.yossibank.shared.generated.**")
+        }
+    }
+
     android {
         namespace = "com.yossibank.shared"
         compileSdk = 37
