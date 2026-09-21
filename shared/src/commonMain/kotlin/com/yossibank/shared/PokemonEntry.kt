@@ -81,6 +81,7 @@ data class PokemonBaseStat(
 data class PokemonEntry(
     val id: Int,
     val name: String,
+    val hasDetail: Boolean,
     val spriteUrl: String?,
     val types: List<PokemonTypeKind>,
     val baseStats: List<PokemonBaseStat>,
@@ -99,6 +100,7 @@ data class PokemonEntry(
         ): PokemonEntry = PokemonEntry(
             id = id,
             name = summary.name,
+            hasDetail = false,
             spriteUrl = null,
             types = emptyList(),
             baseStats = emptyList(),
@@ -111,6 +113,7 @@ data class PokemonEntry(
         ): PokemonEntry = PokemonEntry(
             id = id,
             name = summary.name,
+            hasDetail = true,
             spriteUrl = detail.sprites.frontDefault,
             types = detail.types
                 .sortedBy { it.slot }
