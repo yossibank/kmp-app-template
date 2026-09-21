@@ -25,7 +25,7 @@ sealed interface PokemonListFailure {
     data class Server(
         val statusCode: Int,
     ) : PokemonListFailure {
-        override val canRetry = true
+        override val canRetry = statusCode == 429 || statusCode >= 500
     }
 
     data object Unexpected : PokemonListFailure {

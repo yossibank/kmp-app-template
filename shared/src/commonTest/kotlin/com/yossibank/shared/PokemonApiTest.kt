@@ -130,6 +130,15 @@ class PokemonApiTest {
     }
 
     @Test
+    fun a_rejection_is_retryable_only_when_the_server_might_answer_differently() {
+        assertFalse(PokemonListFailure.Server(400).canRetry)
+        assertFalse(PokemonListFailure.Server(404).canRetry)
+        assertTrue(PokemonListFailure.Server(429).canRetry)
+        assertTrue(PokemonListFailure.Server(500).canRetry)
+        assertTrue(PokemonListFailure.Server(503).canRetry)
+    }
+
+    @Test
     fun fetchDetail_propagates_cancellation() = runTest {
         val slowApi = api(body = detailJson(id = 1), delayMillis = 1_000)
         var outcome = "（未到達）"
