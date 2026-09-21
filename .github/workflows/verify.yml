@@ -32,6 +32,13 @@ jobs:
       - name: Show Xcode version
         run: xcodebuild -version
 
+      - name: Start booting the simulator
+        run: |
+          SIMULATOR=$(xcrun simctl list devices available \
+            | awk -F'[()]' '/^ *iPhone/ {gsub(/^ +| +$/,"",$1); print $1; exit}')
+          echo "SIMULATOR=${SIMULATOR}" >> "$GITHUB_ENV"
+          xcrun simctl boot "$SIMULATOR" || true
+
       - name: Set up JDK
         uses: actions/setup-java@v6
         with:
@@ -82,6 +89,9 @@ jobs:
       - name: Point the iOS app at the locally built XCFramework
         run: python3 .github/scripts/point-ios-at-local-core.py consumer-ios
 
+      - name: Wait for the simulator
+        run: xcrun simctl bootstatus "$SIMULATOR" -b
+
       - name: Test the iOS app against the shared library
         working-directory: consumer-ios
-        run: make test build
+        run: make test build SIMULATOR="$SIMULATOR"
