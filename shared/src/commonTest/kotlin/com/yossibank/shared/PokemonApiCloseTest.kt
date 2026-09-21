@@ -26,7 +26,7 @@ class PokemonApiCloseTest {
 
         api.close()
 
-        assertIs<PokemonPageResult.Loaded>(api.fetchPage(), "渡されたクライアントまで閉じている")
+        assertIs<FetchOutcome.Ok<PokemonPage>>(api.fetchPage(), "渡されたクライアントまで閉じている")
     }
 
     @Test

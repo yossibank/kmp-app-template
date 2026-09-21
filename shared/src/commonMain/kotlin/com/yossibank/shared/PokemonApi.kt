@@ -60,16 +60,15 @@ internal sealed interface FetchOutcome<out T> {
     ) : FetchOutcome<Nothing>
 }
 
-internal sealed interface PokemonPageResult {
-    data class Loaded(
-        val pokemon: List<PokemonSummary>,
-        val hasMore: Boolean,
-    ) : PokemonPageResult
-
-    data class Failed(
-        val reason: PokemonListFailure,
-    ) : PokemonPageResult
+internal inline fun <T, R> FetchOutcome<T>.map(transform: (T) -> R): FetchOutcome<R> = when (this) {
+    is FetchOutcome.Ok -> FetchOutcome.Ok(transform(value))
+    is FetchOutcome.Err -> this
 }
+
+internal data class PokemonPage(
+    val pokemon: List<PokemonSummary>,
+    val hasMore: Boolean,
+)
 
 class PokemonApi internal constructor(
     private val baseUrl: String,
@@ -81,22 +80,10 @@ class PokemonApi internal constructor(
     internal suspend fun fetchPage(
         limit: Int = PAGE_SIZE,
         offset: Int = 0,
-    ): PokemonPageResult {
-        val outcome = fetch<ListResponse>("$baseUrl/api/v2/pokemon/") {
-            parameter("limit", limit)
-            parameter("offset", offset)
-        }
-
-        return when (outcome) {
-            is FetchOutcome.Ok ->
-                PokemonPageResult.Loaded(
-                    pokemon = outcome.value.results,
-                    hasMore = outcome.value.next != null,
-                )
-
-            is FetchOutcome.Err -> PokemonPageResult.Failed(outcome.reason)
-        }
-    }
+    ): FetchOutcome<PokemonPage> = fetch<ListResponse>("$baseUrl/api/v2/pokemon/") {
+        parameter("limit", limit)
+        parameter("offset", offset)
+    }.map { PokemonPage(pokemon = it.results, hasMore = it.next != null) }
 
     internal suspend fun fetchDetail(id: Int): FetchOutcome<PokemonDetail> = fetch("$baseUrl/api/v2/pokemon/$id/")
 
