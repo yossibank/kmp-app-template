@@ -1,5 +1,6 @@
 package com.yossibank.shared
 
+import com.yossibank.shared.generated.model.PokemonDetail
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.http.ContentType
@@ -14,7 +15,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 private val PAGE_JSON = pageJson(
@@ -103,19 +103,30 @@ class PokemonApiTest {
 
     @Test
     fun fetchDetail_reads_the_fields_the_list_shows() = runTest {
-        val detail = api(body = detailJson(id = 1)).fetchDetail(1)
+        val outcome = api(body = detailJson(id = 1)).fetchDetail(1)
 
-        assertEquals(1, detail?.id)
-        assertEquals("https://img.test/1.png", detail?.sprites?.frontDefault)
-        assertEquals(listOf("grass", "poison"), detail?.types?.map { it.type.name })
-        assertEquals(listOf(45, 49), detail?.stats?.map { it.baseStat })
+        val detail = assertIs<FetchOutcome.Ok<PokemonDetail>>(outcome).value
+        assertEquals(1, detail.id)
+        assertEquals("https://img.test/1.png", detail.sprites.frontDefault)
+        assertEquals(listOf("grass", "poison"), detail.types.map { it.type.name })
+        assertEquals(listOf(45, 49), detail.stats.map { it.baseStat })
     }
 
     @Test
-    fun fetchDetail_returns_null_instead_of_failing_the_page() = runTest {
-        assertNull(api(status = HttpStatusCode.NotFound).fetchDetail(1))
-        assertNull(api(body = "not json").fetchDetail(1))
-        assertNull(api(unreachable = true).fetchDetail(1))
+    fun fetchDetail_says_why_it_failed_instead_of_returning_null() = runTest {
+        assertEquals(
+            PokemonListFailure.Server(404),
+            assertIs<FetchOutcome.Err>(api(status = HttpStatusCode.NotFound).fetchDetail(1)).reason,
+        )
+        assertEquals(
+            PokemonListFailure.Unexpected,
+            assertIs<FetchOutcome.Err>(api(body = "not json").fetchDetail(1)).reason,
+            "モデルと実レスポンスのずれが通信断と同じ扱いになっている",
+        )
+        assertEquals(
+            PokemonListFailure.Offline,
+            assertIs<FetchOutcome.Err>(api(unreachable = true).fetchDetail(1)).reason,
+        )
     }
 
     @Test

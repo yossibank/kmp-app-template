@@ -81,13 +81,11 @@ data class PokemonBaseStat(
 data class PokemonEntry(
     val id: Int,
     val name: String,
-    val japaneseName: String?,
+    val hasDetail: Boolean,
     val spriteUrl: String?,
     val types: List<PokemonTypeKind>,
     val baseStats: List<PokemonBaseStat>,
 ) {
-    val displayName: String = japaneseName ?: name
-
     val totalBaseStat: Int = baseStats.sumOf { it.value }
 
     internal companion object {
@@ -102,7 +100,7 @@ data class PokemonEntry(
         ): PokemonEntry = PokemonEntry(
             id = id,
             name = summary.name,
-            japaneseName = null,
+            hasDetail = false,
             spriteUrl = null,
             types = emptyList(),
             baseStats = emptyList(),
@@ -112,11 +110,10 @@ data class PokemonEntry(
             id: Int,
             summary: PokemonSummary,
             detail: PokemonDetail,
-            species: PokemonSpecies?,
         ): PokemonEntry = PokemonEntry(
             id = id,
             name = summary.name,
-            japaneseName = species?.japaneseName(),
+            hasDetail = true,
             spriteUrl = detail.sprites.frontDefault,
             types = detail.types
                 .sortedBy { it.slot }

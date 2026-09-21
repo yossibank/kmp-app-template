@@ -26,20 +26,12 @@ jobs:
       - name: Show Xcode version
         run: xcodebuild -version
 
-      # gradle/gradle-daemon-jvm.properties が Java 25 を要求する。
-      # 事前に用意しないと Gradle が foojay から自動ダウンロードして遅くなる。
-      # macOS ランナーに Java 25 は入っていないため毎回ダウンロードされる（約 96 秒）。
-      # actions/cache でツールキャッシュを持ち越す案は実測したが、798MB の復元に
-      # 233 秒かかり逆に遅くなった。
       - name: Set up JDK
         uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '25'
 
-      # 設定キャッシュはプロジェクト内の .gradle に置かれるため、Gradle home を
-      # 対象にする setup-gradle のキャッシュには含まれない。432KB と小さいので
-      # 別に持ち越す。
       - name: Cache the Gradle configuration cache
         uses: actions/cache@v6
         with:
@@ -52,7 +44,6 @@ jobs:
       - name: Verify
         run: make verify
 
-      # make verify は共通コアのコンパイルまでしか見ないので、消費側まで確認する。
       - name: Check out the Android app
         uses: actions/checkout@v7
         with:
@@ -63,8 +54,6 @@ jobs:
       - name: Point the Android app at mavenLocal
         run: python3 .github/scripts/point-android-at-local-core.py consumer-android
 
-      # Android の解決に要るのは root と android の 2 つだけ。publishToMavenLocal は
-      # iOS 向けの klib も出すが、消費側検証では使わない（無くてもビルドが通ることを確認済み）。
       - name: Publish the shared library to mavenLocal
         run: |
           ./gradlew \
@@ -85,9 +74,6 @@ jobs:
       - name: Point the iOS app at the locally built XCFramework
         run: python3 .github/scripts/point-ios-at-local-core.py consumer-ios
 
-      # Android 側と同じく実行まで見る。build だけでは 0.8.0 の変更が通り抜け、
-      # 消費側の CI で初めて落ちた。消費側の make を呼ぶので、宛先の機種は
-      # 向こうが決める（ランナーの Xcode に存在する機種が選ばれる）。
       - name: Test the iOS app against the shared library
         working-directory: consumer-ios
         run: make test build
