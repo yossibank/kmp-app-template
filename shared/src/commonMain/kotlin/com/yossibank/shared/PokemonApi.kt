@@ -3,7 +3,9 @@ package com.yossibank.shared
 import com.yossibank.shared.generated.model.PokemonDetail
 import com.yossibank.shared.generated.model.PokemonSummary
 import io.ktor.client.HttpClient
+import io.ktor.client.HttpClientConfig
 import io.ktor.client.call.body
+import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.HttpRequestBuilder
@@ -72,10 +74,16 @@ internal data class PokemonPage(
 
 class PokemonApi internal constructor(
     private val baseUrl: String,
-    private val client: HttpClient,
-    private val ownsClient: Boolean = false,
+    engine: HttpClientEngine?,
 ) {
-    constructor() : this(DEFAULT_BASE_URL, defaultClient(), ownsClient = true)
+    constructor() : this(DEFAULT_BASE_URL, engine = null)
+
+    private val client: HttpClient =
+        if (engine == null) {
+            HttpClient { installDefaults() }
+        } else {
+            HttpClient(engine) { installDefaults() }
+        }
 
     internal suspend fun fetchPage(
         limit: Int = PAGE_SIZE,
@@ -87,11 +95,7 @@ class PokemonApi internal constructor(
 
     internal suspend fun fetchDetail(id: Int): FetchOutcome<PokemonDetail> = fetch("$baseUrl/api/v2/pokemon/$id/")
 
-    fun close() {
-        if (ownsClient) {
-            client.close()
-        }
-    }
+    fun close() = client.close()
 
     private suspend inline fun <reified T> fetch(
         url: String,
@@ -126,16 +130,16 @@ class PokemonApi internal constructor(
         const val REQUEST_TIMEOUT_MILLIS: Long = 15_000
 
         private const val DEFAULT_BASE_URL = "https://pokeapi.co"
+    }
+}
 
-        private fun defaultClient(): HttpClient = HttpClient {
-            install(ContentNegotiation) {
-                json(Json { ignoreUnknownKeys = true })
-            }
-            install(HttpTimeout) {
-                requestTimeoutMillis = REQUEST_TIMEOUT_MILLIS
-                connectTimeoutMillis = CONNECT_TIMEOUT_MILLIS
-                socketTimeoutMillis = CONNECT_TIMEOUT_MILLIS
-            }
-        }
+private fun HttpClientConfig<*>.installDefaults() {
+    install(ContentNegotiation) {
+        json(Json { ignoreUnknownKeys = true })
+    }
+    install(HttpTimeout) {
+        requestTimeoutMillis = PokemonApi.REQUEST_TIMEOUT_MILLIS
+        connectTimeoutMillis = PokemonApi.CONNECT_TIMEOUT_MILLIS
+        socketTimeoutMillis = PokemonApi.CONNECT_TIMEOUT_MILLIS
     }
 }

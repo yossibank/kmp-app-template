@@ -41,7 +41,7 @@ private fun api(
             headers = headersOf("Content-Type", ContentType.Application.Json.toString()),
         )
     }
-    return PokemonApi(baseUrl = TEST_BASE_URL, client = testClient(engine))
+    return PokemonApi(baseUrl = TEST_BASE_URL, engine = engine)
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)

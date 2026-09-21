@@ -1,11 +1,5 @@
 package com.yossibank.shared
 
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.mock.MockEngine
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.serialization.kotlinx.json.json
-import kotlinx.serialization.json.Json
-
 internal const val TEST_BASE_URL = "https://example.test"
 
 internal fun detailJson(
@@ -76,8 +70,4 @@ internal fun pageJson(
     val results = ids.joinToString(",") { """{"name":"p$it","url":"${summaryUrl(it)}"}""" }
     val nextValue = next?.let { "\"$it\"" } ?: "null"
     return """{"count":1302,"next":$nextValue,"previous":null,"results":[$results]}"""
-}
-
-internal fun testClient(engine: MockEngine) = HttpClient(engine) {
-    install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
 }

@@ -9,7 +9,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertIs
 
 private fun engine() = MockEngine {
     respond(
@@ -21,17 +20,8 @@ private fun engine() = MockEngine {
 
 class PokemonApiCloseTest {
     @Test
-    fun close_leaves_a_client_it_was_handed_alone() = runTest {
-        val api = PokemonApi(baseUrl = TEST_BASE_URL, client = testClient(engine()))
-
-        api.close()
-
-        assertIs<FetchOutcome.Ok<PokemonPage>>(api.fetchPage(), "渡されたクライアントまで閉じている")
-    }
-
-    @Test
-    fun close_shuts_down_the_client_it_created() = runTest {
-        val api = PokemonApi(baseUrl = TEST_BASE_URL, client = testClient(engine()), ownsClient = true)
+    fun close_shuts_down_the_client() = runTest {
+        val api = PokemonApi(baseUrl = TEST_BASE_URL, engine = engine())
 
         api.close()
 
@@ -42,6 +32,6 @@ class PokemonApiCloseTest {
             "閉じている"
         }
 
-        assertEquals("閉じている", outcome, "自分で作ったクライアントを閉じていない")
+        assertEquals("閉じている", outcome, "close が効いていない")
     }
 }
