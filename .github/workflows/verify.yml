@@ -11,6 +11,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 env:
   DEVELOPER_DIR: /Applications/Xcode.app
 
@@ -18,6 +22,7 @@ jobs:
   verify:
     name: Build and test
     runs-on: macos-26
+    timeout-minutes: 60
 
     steps:
       - name: Checkout repository
@@ -37,6 +42,8 @@ jobs:
         with:
           path: .gradle/configuration-cache
           key: gradle-config-cache-${{ runner.os }}-${{ hashFiles('**/*.gradle.kts', 'gradle/libs.versions.toml', 'gradle.properties') }}
+          restore-keys: |
+            gradle-config-cache-${{ runner.os }}-
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
