@@ -13,7 +13,7 @@ plugins {
 }
 
 group = "com.yossibank"
-version = "0.12.0"
+version = "0.13.0"
 
 publishing {
     repositories {
