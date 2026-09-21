@@ -36,20 +36,21 @@ sealed interface PokemonListFailure {
 }
 
 sealed interface PokemonListResult {
+    val pokemon: List<PokemonEntry>
+    val hasMore: Boolean
+
+    val incompleteCount: Int get() = pokemon.count { !it.hasDetail }
+
     data class Loaded(
-        val pokemon: List<PokemonEntry>,
-        val hasMore: Boolean,
-    ) : PokemonListResult {
-        val incompleteCount: Int = pokemon.count { !it.hasDetail }
-    }
+        override val pokemon: List<PokemonEntry>,
+        override val hasMore: Boolean,
+    ) : PokemonListResult
 
     data class Failed(
-        val pokemon: List<PokemonEntry>,
-        val hasMore: Boolean,
+        override val pokemon: List<PokemonEntry>,
+        override val hasMore: Boolean,
         val failure: PokemonListFailure,
-    ) : PokemonListResult {
-        val incompleteCount: Int = pokemon.count { !it.hasDetail }
-    }
+    ) : PokemonListResult
 }
 
 internal sealed interface FetchOutcome<out T> {
