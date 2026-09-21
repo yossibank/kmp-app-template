@@ -21,9 +21,9 @@ private class PageServer(
     private val failFrom: Int? = null,
     private val delayMillis: Long = 0,
     private val detailFailsFor: Set<Int> = emptySet(),
+    private val idlessAt: Set<Int> = emptySet(),
 ) {
-    var pageRequests = 0
-        private set
+    val pageOffsets = mutableListOf<Int>()
 
     var detailRequests = 0
         private set
@@ -57,16 +57,16 @@ private class PageServer(
                 }
             } else {
                 delay(delayMillis)
-                pageRequests += 1
                 val offset = offsetParam.toInt()
                 val limit = request.url.parameters["limit"]!!.toInt()
+                pageOffsets += offset
 
                 if (failFrom != null && offset >= failFrom) {
                     respond(content = "", status = HttpStatusCode.InternalServerError, headers = json)
                 } else {
                     val ids = (offset until minOf(offset + limit, total)).toList()
                     val next = if (offset + limit < total) "$TEST_BASE_URL/next" else null
-                    respond(content = pageJson(ids, next), status = HttpStatusCode.OK, headers = json)
+                    respond(content = pageJson(ids, next, idlessAt), status = HttpStatusCode.OK, headers = json)
                 }
             }
         }
@@ -153,9 +153,24 @@ class PokemonPagerTest {
         assertEquals(listOf("p0", "p1", "p2"), last.pokemon.map { it.name })
         assertFalse(last.hasMore)
 
-        val requestsAtEnd = server.pageRequests
+        val requestsAtEnd = server.pageOffsets.size
         pager.loadNext()
-        assertEquals(requestsAtEnd, server.pageRequests, "終端に達したあとは問い合わせない")
+        assertEquals(requestsAtEnd, server.pageOffsets.size, "終端に達したあとは問い合わせない")
+    }
+
+    @Test
+    fun a_summary_without_an_id_does_not_shift_the_page_window() = runTest {
+        val server = PageServer(total = 8, idlessAt = setOf(1))
+        val pager = server.pager(pageSize = 2)
+
+        var names = emptyList<String>()
+        repeat(3) {
+            names = assertIs<PokemonListResult.Loaded>(pager.loadNext()).pokemon.map { it.name }
+        }
+
+        assertEquals(listOf(0, 2, 4), server.pageOffsets, "id を取れない行の分だけ次ページの窓がずれている")
+        assertEquals(names.distinct(), names, "同じ行が二重に積まれている")
+        assertEquals(listOf("p0", "p2", "p3", "p4", "p5"), names)
     }
 
     @Test
@@ -196,7 +211,7 @@ class PokemonPagerTest {
             async { pager.loadNext() },
         ).awaitAll()
 
-        assertEquals(2, server.pageRequests, "重ねて呼んでも 1 ページずつしか取らない")
+        assertEquals(2, server.pageOffsets.size, "重ねて呼んでも 1 ページずつしか取らない")
         val names = results.map { assertIs<PokemonListResult.Loaded>(it).pokemon.map { p -> p.name } }
         assertEquals(listOf("p0", "p1"), names[0])
         assertEquals(listOf("p0", "p1", "p2", "p3"), names[1])

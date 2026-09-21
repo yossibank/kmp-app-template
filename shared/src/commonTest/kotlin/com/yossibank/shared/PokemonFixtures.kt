@@ -66,8 +66,12 @@ internal fun summaryUrl(id: Int) = "$TEST_BASE_URL/api/v2/pokemon/$id/"
 internal fun pageJson(
     ids: List<Int>,
     next: String?,
+    idless: Set<Int> = emptySet(),
 ): String {
-    val results = ids.joinToString(",") { """{"name":"p$it","url":"${summaryUrl(it)}"}""" }
+    val results = ids.joinToString(",") {
+        val url = if (it in idless) "$TEST_BASE_URL/api/v2/pokemon/" else summaryUrl(it)
+        """{"name":"p$it","url":"$url"}"""
+    }
     val nextValue = next?.let { "\"$it\"" } ?: "null"
     return """{"count":1302,"next":$nextValue,"previous":null,"results":[$results]}"""
 }

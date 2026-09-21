@@ -16,11 +16,12 @@ class PokemonPager internal constructor(
     private val loadMutex = Mutex()
     private val stateMutex = Mutex()
     private val loaded = mutableListOf<PokemonEntry>()
+    private var nextOffset = 0
     private var exhausted = false
     private var generation = 0
 
     suspend fun loadNext(): PokemonListResult = loadMutex.withLock {
-        val start = stateMutex.withLock { Snapshot(loaded.size, exhausted, generation) }
+        val start = stateMutex.withLock { Snapshot(nextOffset, exhausted, generation) }
 
         if (start.exhausted) {
             return@withLock stateMutex.withLock { loaded() }
@@ -33,6 +34,7 @@ class PokemonPager internal constructor(
                 stateMutex.withLock {
                     if (start.generation == generation) {
                         loaded += entries
+                        nextOffset += page.value.pokemon.size
                         exhausted = !page.value.hasMore
                     }
                     loaded()
@@ -45,6 +47,7 @@ class PokemonPager internal constructor(
 
     suspend fun reset() = stateMutex.withLock {
         loaded.clear()
+        nextOffset = 0
         exhausted = false
         generation += 1
     }
