@@ -33,6 +33,40 @@ fi
 export GITHUB_ACTOR="${GITHUB_ACTOR:-$(gh api user --jq .login)}"
 export GITHUB_TOKEN="${GITHUB_TOKEN:-$(gh auth token)}"
 
+BASE_COMMIT="$(git rev-parse HEAD)"
+STAGE="edited"
+
+undo_edit() { git checkout -- "$BUILD_FILE" Package.swift >/dev/null 2>&1 || true; }
+undo_draft() { gh release delete "$TAG" --yes >/dev/null 2>&1 || true; }
+undo_commit() {
+    git tag -d "$TAG" >/dev/null 2>&1 || true
+    git reset -q --hard "$BASE_COMMIT"
+}
+
+on_error() {
+    case "$STAGE" in
+        edited)
+            undo_edit
+            ;;
+        draft)
+            undo_draft
+            undo_edit
+            ;;
+        committed)
+            undo_draft
+            undo_commit
+            ;;
+        pushed)
+            echo >&2
+            echo "${TAG} は push 済みですが publish が終わっていません。" >&2
+            echo "バージョンはまだ使えます。同じ番号のまま次で再開してください:" >&2
+            echo "  ./gradlew :${MODULE}:publishAllPublicationsToGitHubPackagesRepository" >&2
+            echo "  gh release edit ${TAG} --draft=false" >&2
+            ;;
+    esac
+}
+trap on_error ERR
+
 echo "▶ ${TAG} のリリースを開始します"
 
 sed -i '' "s/^version = \".*\"$/version = \"${VERSION}\"/" "$BUILD_FILE"
@@ -42,11 +76,7 @@ echo "  version = ${VERSION} を ${BUILD_FILE} に書き込みました"
 [ -f "$ZIP" ] || { echo "zip が生成されていません: $ZIP" >&2; exit 1; }
 CHECKSUM="$(cat "$CHECKSUM_FILE")"
 
-./gradlew ":${MODULE}:publishAllPublicationsToGitHubPackagesRepository"
-
-cleanup_draft() { gh release delete "$TAG" --yes >/dev/null 2>&1 || true; }
-trap cleanup_draft ERR
-
+STAGE="draft"
 gh release create "$TAG" --draft --title "$TAG" --generate-notes >/dev/null
 gh release upload "$TAG" "$ZIP" >/dev/null
 
@@ -79,14 +109,19 @@ let package = Package(
 )
 EOF
 
+STAGE="committed"
 git add Package.swift "$BUILD_FILE"
 git commit -q -m "Release ${TAG}"
 git tag -a "$TAG" -m "${FRAMEWORK} ${VERSION}"
+
+STAGE="pushed"
 git push -q origin HEAD
 git push -q origin "$TAG"
 
-trap - ERR
+./gradlew ":${MODULE}:publishAllPublicationsToGitHubPackagesRepository"
 gh release edit "$TAG" --tag "$TAG" --draft=false >/dev/null
+
+trap - ERR
 
 echo
 echo "✅ ${TAG} をリリースしました"

@@ -56,7 +56,7 @@ private class StallingServer {
         }
 
         return PokemonPager(
-            api = PokemonApi(baseUrl = TEST_BASE_URL, client = testClient(engine)),
+            api = PokemonApi(baseUrl = TEST_BASE_URL, engine = engine),
             pageSize = 2,
         )
     }

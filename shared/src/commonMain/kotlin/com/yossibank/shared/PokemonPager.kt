@@ -27,19 +27,19 @@ class PokemonPager internal constructor(
         }
 
         when (val page = api.fetchPage(limit = pageSize, offset = start.offset)) {
-            is PokemonPageResult.Loaded -> {
-                val entries = enrich(page.pokemon)
+            is FetchOutcome.Ok -> {
+                val entries = enrich(page.value.pokemon)
 
                 stateMutex.withLock {
                     if (start.generation == generation) {
                         loaded += entries
-                        exhausted = !page.hasMore
+                        exhausted = !page.value.hasMore
                     }
                     loaded()
                 }
             }
 
-            is PokemonPageResult.Failed -> stateMutex.withLock { failed(page.reason) }
+            is FetchOutcome.Err -> stateMutex.withLock { failed(page.reason) }
         }
     }
 
@@ -56,7 +56,7 @@ class PokemonPager internal constructor(
         hasMore = !exhausted,
     )
 
-    private fun failed(reason: PokemonListFailure) = PokemonListResult.Failed(
+    private fun failed(reason: PokemonFailure) = PokemonListResult.Failed(
         pokemon = loaded.toList(),
         hasMore = !exhausted,
         failure = reason,
