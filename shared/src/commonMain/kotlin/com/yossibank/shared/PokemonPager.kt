@@ -5,7 +5,9 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.sync.withPermit
 
 class PokemonPager internal constructor(
     private val api: PokemonApi,
@@ -66,14 +68,18 @@ class PokemonPager internal constructor(
     )
 
     private suspend fun enrich(summaries: List<PokemonSummary>): List<PokemonEntry> = coroutineScope {
+        val gate = Semaphore(DETAIL_CONCURRENCY)
+
         summaries
             .map { summary ->
                 async {
                     val id = PokemonEntry.idOf(summary) ?: return@async null
 
-                    when (val detail = api.fetchDetail(id)) {
-                        is FetchOutcome.Ok -> PokemonEntry.from(id, summary, detail.value)
-                        is FetchOutcome.Err -> PokemonEntry.nameOnly(id, summary, detail.reason)
+                    gate.withPermit {
+                        when (val detail = api.fetchDetail(id)) {
+                            is FetchOutcome.Ok -> PokemonEntry.from(id, summary, detail.value)
+                            is FetchOutcome.Err -> PokemonEntry.nameOnly(id, summary, detail.reason)
+                        }
                     }
                 }
             }.awaitAll()
@@ -88,5 +94,7 @@ class PokemonPager internal constructor(
 
     companion object {
         const val PREFETCH_DISTANCE: Int = 3
+
+        internal const val DETAIL_CONCURRENCY: Int = 6
     }
 }

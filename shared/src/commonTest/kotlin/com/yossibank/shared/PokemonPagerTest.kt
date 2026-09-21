@@ -8,6 +8,8 @@ import io.ktor.http.headersOf
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -32,17 +34,21 @@ private class PageServer(
 
     private var inFlightDetails = 0
 
+    private val counters = Mutex()
+
     fun pager(pageSize: Int): PokemonPager {
         val engine = MockEngine { request ->
             val json = headersOf("Content-Type", ContentType.Application.Json.toString())
             val offsetParam = request.url.parameters["offset"]
 
             if (offsetParam == null) {
-                detailRequests += 1
-                inFlightDetails += 1
-                maxConcurrentDetails = maxOf(maxConcurrentDetails, inFlightDetails)
+                counters.withLock {
+                    detailRequests += 1
+                    inFlightDetails += 1
+                    maxConcurrentDetails = maxOf(maxConcurrentDetails, inFlightDetails)
+                }
                 delay(delayMillis)
-                inFlightDetails -= 1
+                counters.withLock { inFlightDetails -= 1 }
 
                 val id = request.url.encodedPath
                     .trimEnd('/')
@@ -58,7 +64,7 @@ private class PageServer(
                 delay(delayMillis)
                 val offset = offsetParam.toInt()
                 val limit = request.url.parameters["limit"]!!.toInt()
-                pageOffsets += offset
+                counters.withLock { pageOffsets += offset }
 
                 if (failFrom != null && offset >= failFrom) {
                     respond(content = "", status = HttpStatusCode.InternalServerError, headers = json)
@@ -149,6 +155,22 @@ class PokemonPagerTest {
 
         assertEquals(4, server.detailRequests)
         assertTrue(server.maxConcurrentDetails > 1, "同時実行数=${server.maxConcurrentDetails} 詳細が 1 件ずつ直列に走っている")
+    }
+
+    @Test
+    fun a_page_does_not_put_every_detail_on_the_wire_at_once() = runTest {
+        val size = PokemonPager.DETAIL_CONCURRENCY * 4
+        val server = PageServer(total = size, delayMillis = 100)
+        val pager = server.pager(pageSize = size)
+
+        pager.loadNext()
+
+        assertEquals(size, server.detailRequests)
+        assertEquals(
+            PokemonPager.DETAIL_CONCURRENCY,
+            server.maxConcurrentDetails,
+            "1 ページ分の詳細が同時に $size 本まで出ている",
+        )
     }
 
     @Test
