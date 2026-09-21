@@ -2,16 +2,19 @@ ifdef CI
 GRADLE_FLAGS := --rerun-tasks
 endif
 
-.PHONY: verify lint format build build-android build-ios publish-local publish-github test clean
+.PHONY: verify lint format api build build-android build-ios publish-local publish-github test clean
 
 verify:
-	./gradlew :shared:ktlintCheck :shared:assembleAndroidMain :shared:assembleSharedReleaseXCFramework :shared:allTests $(GRADLE_FLAGS)
+	./gradlew :shared:ktlintCheck :shared:checkKotlinAbi :shared:assembleAndroidMain :shared:assembleSharedReleaseXCFramework :shared:allTests $(GRADLE_FLAGS)
 
 lint:
 	./gradlew :shared:ktlintCheck $(GRADLE_FLAGS)
 
 format:
 	./gradlew :shared:ktlintFormat
+
+api:
+	./gradlew :shared:updateKotlinAbi
 
 build: build-android build-ios
 
