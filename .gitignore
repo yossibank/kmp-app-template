@@ -3,20 +3,17 @@
 build/
 local.properties
 
-# 注意: gradle/wrapper/gradle-wrapper.jar は必ずコミットする。
-# *.jar の一括除外を追加しないこと。
-
-# Kotlin / Kotlin Multiplatform
+# Kotlin
 .kotlin/
 kotlin-js-store/
 
-# Xcode / iOS 成果物
+# Xcode
 *.xcframework/
 xcuserdata/
 DerivedData/
 .build/
 
-# .github/scripts の実行で作られる
+# Python
 __pycache__/
 
 # IDE (Android Studio / IntelliJ / Fleet)
@@ -31,3 +28,6 @@ out/
 
 # Logs
 *.log
+
+# Claude
+.claude
