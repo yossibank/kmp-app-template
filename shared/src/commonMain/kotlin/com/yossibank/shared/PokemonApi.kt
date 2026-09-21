@@ -46,7 +46,7 @@ sealed interface PokemonListResult {
     val pokemon: List<PokemonEntry>
     val hasMore: Boolean
 
-    val incompleteCount: Int get() = pokemon.count { !it.hasDetail }
+    val incompleteCount: Int get() = pokemon.count { it.detail is PokemonEntryDetail.Missing }
 
     data class Loaded(
         override val pokemon: List<PokemonEntry>,

@@ -13,7 +13,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 private class PageServer(
@@ -100,19 +99,20 @@ class PokemonPagerTest {
         val entry = loaded.pokemon.single()
 
         assertEquals(0, entry.id)
-        assertTrue(entry.hasDetail)
         assertEquals(0, loaded.incompleteCount)
         assertEquals("p0", entry.name)
-        assertEquals("https://img.test/0.png", entry.spriteUrl)
-        assertEquals(listOf(PokemonTypeKind.GRASS, PokemonTypeKind.POISON), entry.types)
+
+        val detail = assertIs<PokemonEntryDetail.Loaded>(entry.detail)
+        assertEquals("https://img.test/0.png", detail.spriteUrl)
+        assertEquals(listOf(PokemonTypeKind.GRASS, PokemonTypeKind.POISON), detail.types)
         assertEquals(
             listOf(
                 PokemonBaseStat(PokemonStatKind.HP, 45),
                 PokemonBaseStat(PokemonStatKind.ATTACK, 49),
             ),
-            entry.baseStats,
+            detail.baseStats,
         )
-        assertEquals(94, entry.totalBaseStat)
+        assertEquals(94, detail.totalBaseStat)
     }
 
     @Test
@@ -126,10 +126,18 @@ class PokemonPagerTest {
 
         val degraded = loaded.pokemon.single { it.id == 1 }
         assertEquals("p1", degraded.name)
-        assertFalse(degraded.hasDetail)
-        assertNull(degraded.spriteUrl)
-        assertTrue(degraded.types.isEmpty())
-        assertTrue(degraded.baseStats.isEmpty())
+        assertIs<PokemonEntryDetail.Missing>(degraded.detail)
+    }
+
+    @Test
+    fun a_row_says_why_its_detail_is_missing() = runTest {
+        val pager = PageServer(total = 2, detailFailsFor = setOf(1)).pager(pageSize = 2)
+
+        val loaded = assertIs<PokemonListResult.Loaded>(pager.loadNext())
+        val missing = assertIs<PokemonEntryDetail.Missing>(loaded.pokemon.single { it.id == 1 }.detail)
+
+        assertEquals(PokemonFailure.Server(500), missing.failure, "詳細の失敗理由が消えている")
+        assertTrue(missing.failure.canRetry, "再試行できる失敗かどうかを消費側が判断できない")
     }
 
     @Test

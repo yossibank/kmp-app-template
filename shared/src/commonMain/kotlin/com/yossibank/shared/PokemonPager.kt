@@ -73,7 +73,7 @@ class PokemonPager internal constructor(
 
                     when (val detail = api.fetchDetail(id)) {
                         is FetchOutcome.Ok -> PokemonEntry.from(id, summary, detail.value)
-                        is FetchOutcome.Err -> PokemonEntry.nameOnly(id, summary)
+                        is FetchOutcome.Err -> PokemonEntry.nameOnly(id, summary, detail.reason)
                     }
                 }
             }.awaitAll()
