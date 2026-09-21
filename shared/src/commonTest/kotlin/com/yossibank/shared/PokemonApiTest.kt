@@ -59,8 +59,18 @@ class PokemonApiTest {
     fun fetchPage_reports_offline_when_the_server_cannot_be_reached() = runTest {
         val result = assertIs<FetchOutcome.Err>(api(unreachable = true).fetchPage())
 
-        assertEquals(PokemonListFailure.Offline, result.reason)
-        assertTrue(PokemonListFailure.Offline.canRetry)
+        assertEquals(PokemonFailure.Offline, result.reason)
+        assertTrue(PokemonFailure.Offline.canRetry)
+    }
+
+    @Test
+    fun fetchPage_separates_a_slow_server_from_one_it_cannot_reach() = runTest {
+        val result = assertIs<FetchOutcome.Err>(
+            api(delayMillis = PokemonApi.REQUEST_TIMEOUT_MILLIS * 2).fetchPage(),
+        )
+
+        assertEquals(PokemonFailure.Timeout, result.reason, "遅いだけのサーバーがオフライン扱いになっている")
+        assertTrue(PokemonFailure.Timeout.canRetry)
     }
 
     @Test
@@ -69,16 +79,16 @@ class PokemonApiTest {
             api(status = HttpStatusCode.InternalServerError).fetchPage(),
         )
 
-        assertEquals(PokemonListFailure.Server(500), result.reason)
-        assertTrue(PokemonListFailure.Server(500).canRetry)
+        assertEquals(PokemonFailure.Server(500), result.reason)
+        assertTrue(PokemonFailure.Server(500).canRetry)
     }
 
     @Test
     fun fetchPage_reports_unexpected_when_the_body_cannot_be_read() = runTest {
         val result = assertIs<FetchOutcome.Err>(api(body = "not json").fetchPage())
 
-        assertEquals(PokemonListFailure.Unexpected, result.reason)
-        assertFalse(PokemonListFailure.Unexpected.canRetry)
+        assertEquals(PokemonFailure.Unexpected, result.reason)
+        assertFalse(PokemonFailure.Unexpected.canRetry)
     }
 
     @Test
@@ -115,27 +125,27 @@ class PokemonApiTest {
     @Test
     fun fetchDetail_says_why_it_failed_instead_of_returning_null() = runTest {
         assertEquals(
-            PokemonListFailure.Server(404),
+            PokemonFailure.Server(404),
             assertIs<FetchOutcome.Err>(api(status = HttpStatusCode.NotFound).fetchDetail(1)).reason,
         )
         assertEquals(
-            PokemonListFailure.Unexpected,
+            PokemonFailure.Unexpected,
             assertIs<FetchOutcome.Err>(api(body = "not json").fetchDetail(1)).reason,
             "モデルと実レスポンスのずれが通信断と同じ扱いになっている",
         )
         assertEquals(
-            PokemonListFailure.Offline,
+            PokemonFailure.Offline,
             assertIs<FetchOutcome.Err>(api(unreachable = true).fetchDetail(1)).reason,
         )
     }
 
     @Test
     fun a_rejection_is_retryable_only_when_the_server_might_answer_differently() {
-        assertFalse(PokemonListFailure.Server(400).canRetry)
-        assertFalse(PokemonListFailure.Server(404).canRetry)
-        assertTrue(PokemonListFailure.Server(429).canRetry)
-        assertTrue(PokemonListFailure.Server(500).canRetry)
-        assertTrue(PokemonListFailure.Server(503).canRetry)
+        assertFalse(PokemonFailure.Server(400).canRetry)
+        assertFalse(PokemonFailure.Server(404).canRetry)
+        assertTrue(PokemonFailure.Server(429).canRetry)
+        assertTrue(PokemonFailure.Server(500).canRetry)
+        assertTrue(PokemonFailure.Server(503).canRetry)
     }
 
     @Test

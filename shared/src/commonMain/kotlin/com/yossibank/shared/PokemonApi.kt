@@ -6,6 +6,9 @@ import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.call.body
 import io.ktor.client.engine.HttpClientEngine
+import io.ktor.client.network.sockets.ConnectTimeoutException
+import io.ktor.client.network.sockets.SocketTimeoutException
+import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.HttpRequestBuilder
@@ -17,20 +20,24 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.Json
 import com.yossibank.shared.generated.model.PaginatedPokemonSummaryList as ListResponse
 
-sealed interface PokemonListFailure {
+sealed interface PokemonFailure {
     val canRetry: Boolean
 
-    data object Offline : PokemonListFailure {
+    data object Offline : PokemonFailure {
+        override val canRetry = true
+    }
+
+    data object Timeout : PokemonFailure {
         override val canRetry = true
     }
 
     data class Server(
         val statusCode: Int,
-    ) : PokemonListFailure {
+    ) : PokemonFailure {
         override val canRetry = statusCode == 429 || statusCode >= 500
     }
 
-    data object Unexpected : PokemonListFailure {
+    data object Unexpected : PokemonFailure {
         override val canRetry = false
     }
 }
@@ -49,7 +56,7 @@ sealed interface PokemonListResult {
     data class Failed(
         override val pokemon: List<PokemonEntry>,
         override val hasMore: Boolean,
-        val failure: PokemonListFailure,
+        val failure: PokemonFailure,
     ) : PokemonListResult
 }
 
@@ -59,7 +66,7 @@ internal sealed interface FetchOutcome<out T> {
     ) : FetchOutcome<T>
 
     data class Err(
-        val reason: PokemonListFailure,
+        val reason: PokemonFailure,
     ) : FetchOutcome<Nothing>
 }
 
@@ -107,11 +114,11 @@ class PokemonApi internal constructor(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            return FetchOutcome.Err(PokemonListFailure.Offline)
+            return FetchOutcome.Err(if (e.isTimeout()) PokemonFailure.Timeout else PokemonFailure.Offline)
         }
 
         if (!response.status.isSuccess()) {
-            return FetchOutcome.Err(PokemonListFailure.Server(response.status.value))
+            return FetchOutcome.Err(PokemonFailure.Server(response.status.value))
         }
 
         return try {
@@ -119,7 +126,7 @@ class PokemonApi internal constructor(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            FetchOutcome.Err(PokemonListFailure.Unexpected)
+            FetchOutcome.Err(PokemonFailure.Unexpected)
         }
     }
 
@@ -133,6 +140,10 @@ class PokemonApi internal constructor(
         private const val DEFAULT_BASE_URL = "https://pokeapi.co"
     }
 }
+
+private fun Throwable.isTimeout(): Boolean = this is HttpRequestTimeoutException ||
+    this is ConnectTimeoutException ||
+    this is SocketTimeoutException
 
 private fun HttpClientConfig<*>.installDefaults() {
     install(ContentNegotiation) {

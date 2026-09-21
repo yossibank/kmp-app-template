@@ -178,7 +178,7 @@ class PokemonPagerTest {
         assertEquals(listOf("p0", "p1"), ok.pokemon.map { it.name })
 
         val failed = assertIs<PokemonListResult.Failed>(pager.loadNext())
-        assertEquals(PokemonListFailure.Server(500), failed.failure)
+        assertEquals(PokemonFailure.Server(500), failed.failure)
         assertEquals(
             listOf("p0", "p1"),
             failed.pokemon.map { it.name },

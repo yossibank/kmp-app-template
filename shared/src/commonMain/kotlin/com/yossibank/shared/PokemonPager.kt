@@ -56,7 +56,7 @@ class PokemonPager internal constructor(
         hasMore = !exhausted,
     )
 
-    private fun failed(reason: PokemonListFailure) = PokemonListResult.Failed(
+    private fun failed(reason: PokemonFailure) = PokemonListResult.Failed(
         pokemon = loaded.toList(),
         hasMore = !exhausted,
         failure = reason,
