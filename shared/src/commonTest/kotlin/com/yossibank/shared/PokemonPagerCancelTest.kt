@@ -30,11 +30,6 @@ private class StallingServer {
             val offsetParam = request.url.parameters["offset"]
 
             when {
-                path.contains("pokemon-species") -> {
-                    val id = path.trimEnd('/').substringAfterLast('/').toInt()
-                    respond(content = speciesJson(id), status = HttpStatusCode.OK, headers = json)
-                }
-
                 offsetParam == null -> {
                     val id = path.trimEnd('/').substringAfterLast('/').toInt()
                     respond(content = detailJson(id), status = HttpStatusCode.OK, headers = json)

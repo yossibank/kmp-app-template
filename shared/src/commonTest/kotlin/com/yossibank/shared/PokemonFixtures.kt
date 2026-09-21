@@ -30,36 +30,41 @@ internal fun detailJson(
           "id": $id,
           "name": "$name",
           "abilities": [],
-          "past_abilities": [],
+          "past_abilities": [
+            {
+              "generation": { "name": "generation-iv", "url": "$TEST_BASE_URL/api/v2/generation/4/" },
+              "abilities": [{ "is_hidden": true, "slot": 3, "ability": null }]
+            }
+          ],
           "forms": [],
           "game_indices": [],
-          "held_items": [],
+          "held_items": [
+            {
+              "item": { "name": "oran-berry", "url": "$TEST_BASE_URL/api/v2/item/132/" },
+              "version_details": [
+                { "rarity": 50, "version": { "name": "ruby", "url": "$TEST_BASE_URL/api/v2/version/7/" } }
+              ]
+            }
+          ],
           "location_area_encounters": "",
-          "moves": [],
           "species": { "name": "$name", "url": "$TEST_BASE_URL/api/v2/pokemon-species/$id/" },
           "sprites": { "front_default": $spriteValue },
           "cries": { "latest": null, "legacy": null },
           "stats": [${statItems.joinToString(",")}],
           "past_stats": [],
           "types": [${typeItems.joinToString(",")}],
-          "past_types": [],
+          "past_types": [
+            {
+              "generation": { "name": "generation-v", "url": "$TEST_BASE_URL/api/v2/generation/5/" },
+              "types": [
+                { "slot": 1, "type": { "name": "normal", "url": "$TEST_BASE_URL/api/v2/type/1/" } }
+              ]
+            }
+          ],
           "height": ${height ?: "null"},
           "weight": ${weight ?: "null"}
         }
         """.trimIndent()
-}
-
-internal fun speciesJson(
-    id: Int,
-    japanese: String? = "にほんご$id",
-): String {
-    val entries = buildList {
-        add("""{"name":"p$id","language":{"name":"en"}}""")
-        if (japanese != null) {
-            add("""{"name":"$japanese","language":{"name":"ja-hrkt"}}""")
-        }
-    }
-    return """{"names":[${entries.joinToString(",")}]}"""
 }
 
 internal fun summaryUrl(id: Int) = "$TEST_BASE_URL/api/v2/pokemon/$id/"

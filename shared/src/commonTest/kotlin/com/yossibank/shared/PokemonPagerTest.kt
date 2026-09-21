@@ -37,16 +37,7 @@ private class PageServer(
             val json = headersOf("Content-Type", ContentType.Application.Json.toString())
             val offsetParam = request.url.parameters["offset"]
 
-            val isSpecies = request.url.encodedPath.contains("pokemon-species")
-
-            if (isSpecies) {
-                val id = request.url.encodedPath
-                    .trimEnd('/')
-                    .substringAfterLast('/')
-                    .toInt()
-                delay(delayMillis)
-                respond(content = speciesJson(id), status = HttpStatusCode.OK, headers = json)
-            } else if (offsetParam == null) {
+            if (offsetParam == null) {
                 detailRequests += 1
                 inFlightDetails += 1
                 maxConcurrentDetails = maxOf(maxConcurrentDetails, inFlightDetails)
@@ -108,8 +99,7 @@ class PokemonPagerTest {
         val entry = loaded.pokemon.single()
 
         assertEquals(0, entry.id)
-        assertEquals("にほんご0", entry.japaneseName)
-        assertEquals("にほんご0", entry.displayName)
+        assertEquals("p0", entry.name)
         assertEquals("https://img.test/0.png", entry.spriteUrl)
         assertEquals(listOf(PokemonTypeKind.GRASS, PokemonTypeKind.POISON), entry.types)
         assertEquals(
@@ -131,8 +121,7 @@ class PokemonPagerTest {
         assertEquals(listOf("p0", "p1"), loaded.pokemon.map { it.name }, "詳細の失敗で行が消えている")
 
         val degraded = loaded.pokemon.single { it.id == 1 }
-        assertNull(degraded.japaneseName)
-        assertEquals("p1", degraded.displayName)
+        assertEquals("p1", degraded.name)
         assertNull(degraded.spriteUrl)
         assertTrue(degraded.types.isEmpty())
         assertTrue(degraded.baseStats.isEmpty())

@@ -35,8 +35,6 @@ publishing {
 }
 
 kotlin {
-    // AGP 9 以降、KMP の Android ターゲットは kotlin { android { } } で設定する。
-    // トップレベルの android { } ブロックは使わない。
     android {
         namespace = "com.yossibank.shared"
         compileSdk = 37
@@ -50,7 +48,6 @@ kotlin {
     }
 
     val xcframework = XCFramework("Shared")
-    // Apple Silicon のみを対象とするため iosX64（Intel シミュレータ）は持たない。
     listOf(
         iosArm64(),
         iosSimulatorArm64(),
@@ -85,28 +82,20 @@ kotlin {
     }
 }
 
-// AGP は Kotlin ソースディレクトリの隣に baselineProfiles を探す。生成先の隣は
-// openApiGenerate の出力の中にあるため、宣言しないと暗黙の依存として弾かれる。
 tasks.matching { it.name.contains("ArtProfile") }.configureEach {
     dependsOn(tasks.named("openApiGenerate"))
 }
 
-// 生成物は整形の対象にしない。直しても次の生成で戻る。
-// ktlint { filter { } } は KMP のソースセット用タスクに効かず、除外パターンは
-// ソースディレクトリからの相対パスに当たるため、生成先のパッケージ名で判別する。
 tasks.withType<org.jlleitschuh.gradle.ktlint.tasks.BaseKtLintCheckTask>().configureEach {
     exclude("**/generated/**")
 }
 
 skie {
     analytics {
-        // 機種を特定できるハードウェア情報を含むため送らない。変換機能には影響しない。
         enabled.set(false)
     }
 }
 
-// XCFramework 自体は Kotlin プラグインの assembleSharedReleaseXCFramework が作るので、
-// xcodebuild -create-xcframework を自前で呼ぶ必要はない。
 abstract class PackageXCFrameworkTask : DefaultTask() {
     @get:Inject
     abstract val execOperations: ExecOperations
@@ -163,9 +152,6 @@ tasks.register<PackageXCFrameworkTask>("packageXCFramework") {
     checksumFile.set(layout.buildDirectory.file("spm/checksum.txt"))
 }
 
-// PokéAPI の仕様からモデルだけを生成する。クライアントは生成しない。
-// openapi-generator の multiplatform テンプレートは Ktor 1.6.7 前提で、
-// このプロジェクトが使う Ktor とはメジャーバージョンが離れている。
 openApiGenerate {
     generatorName.set("kotlin")
     library.set("multiplatform")
@@ -181,15 +167,10 @@ openApiGenerate {
     packageName.set("com.yossibank.shared.generated")
     globalProperties.set(
         mapOf(
-            // PokemonDetail の参照をたどった推移閉包。1 つでも欠けると生成物が
-            // 未定義の型を参照してコンパイルが通らない。
-            // pokemon-species は生成しない。仕様が evolves_from_species と habitat を
-            // 非 null と宣言しているが実際は null が返り、生成モデルでは復号できない。
             "models" to listOf(
                 "AbilitySummary",
                 "GenerationSummary",
-                "MoveLearnMethodSummary",
-                "MoveSummary",
+                "ItemSummary",
                 "PaginatedPokemonSummaryList",
                 "PokemonAbility",
                 "PokemonAbilityPast",
@@ -199,8 +180,6 @@ openApiGenerate {
                 "PokemonGameIndex",
                 "PokemonHeldItem",
                 "PokemonHeldItemVersion",
-                "PokemonMove",
-                "PokemonMoveVersionGroup",
                 "PokemonPastAbility",
                 "PokemonPastStat",
                 "PokemonPastType",
@@ -210,16 +189,13 @@ openApiGenerate {
                 "PokemonSummary",
                 "PokemonType",
                 "StatSummary",
-                "TypePokemon",
                 "TypeSummary",
-                "VersionGroupSummary",
                 "VersionSummary",
             ).joinToString(","),
         ),
     )
     configOptions.set(
         mapOf(
-            // multiplatform は string か kotlinx-datetime しか受け付けない。
             "dateLibrary" to "string",
         ),
     )

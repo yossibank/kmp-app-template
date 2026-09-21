@@ -7,10 +7,6 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-/**
- * 累積した一覧を返すので、消費側は受け取った一覧を置き換えるだけでよい。
- * 取得中に重ねて呼ばれても 1 件しか走らない。
- */
 class PokemonPager internal constructor(
     private val api: PokemonApi,
     private val pageSize: Int,
@@ -53,12 +49,10 @@ class PokemonPager internal constructor(
             .map { summary ->
                 async {
                     val id = PokemonEntry.idOf(summary) ?: return@async null
-                    val detail = async { api.fetchDetail(id) }
-                    val species = async { api.fetchSpecies(id) }
 
-                    when (val loaded = detail.await()) {
+                    when (val detail = api.fetchDetail(id)) {
                         null -> PokemonEntry.nameOnly(id, summary)
-                        else -> PokemonEntry.from(id, summary, loaded, species.await())
+                        else -> PokemonEntry.from(id, summary, detail)
                     }
                 }
             }.awaitAll()

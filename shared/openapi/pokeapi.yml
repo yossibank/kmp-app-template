@@ -6939,7 +6939,6 @@ components:
         ability:
           $ref: '#/components/schemas/AbilitySummary'
       required:
-      - ability
       - slot
     PokemonColorDetail:
       type: object
@@ -7066,11 +7065,6 @@ components:
         location_area_encounters:
           type: string
           readOnly: true
-        moves:
-          type: array
-          items:
-            $ref: '#/components/schemas/PokemonMove'
-          readOnly: true
         species:
           $ref: '#/components/schemas/PokemonSpeciesSummary'
         sprites:
@@ -7109,7 +7103,6 @@ components:
       - held_items
       - id
       - location_area_encounters
-      - moves
       - name
       - past_abilities
       - past_stats
@@ -7500,14 +7493,14 @@ components:
     PokemonHeldItem:
       type: object
       properties:
-        pokemon:
-          $ref: '#/components/schemas/PokemonSummary'
+        item:
+          $ref: '#/components/schemas/ItemSummary'
         version_details:
           type: array
           items:
             $ref: '#/components/schemas/PokemonHeldItemVersion'
       required:
-      - pokemon
+      - item
       - version_details
     PokemonHeldItemVersion:
       type: object
@@ -7578,7 +7571,7 @@ components:
         types:
           type: array
           items:
-            $ref: '#/components/schemas/TypePokemon'
+            $ref: '#/components/schemas/PokemonType'
       required:
       - generation
       - types

@@ -1,5 +1,4 @@
 // swift-tools-version: 6.0
-// このファイルは release.sh が生成する。手で編集しないこと。
 import PackageDescription
 
 let package = Package(

@@ -1,5 +1,3 @@
-# CI は増分を当てにしない。UP-TO-DATE / FROM-CACHE で素通りすると、
-# 警告もテスト結果も出ないまま green になる。
 ifdef CI
 GRADLE_FLAGS := --rerun-tasks
 endif
@@ -26,7 +24,6 @@ build-ios:
 publish-local:
 	./gradlew :shared:publishToMavenLocal
 
-# GitHub Packages へ publish する。同一バージョンの上書きは 409 で拒否される。
 publish-github:
 	./gradlew :shared:publishAllPublicationsToGitHubPackagesRepository
 

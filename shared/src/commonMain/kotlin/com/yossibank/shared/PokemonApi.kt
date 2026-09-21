@@ -14,10 +14,6 @@ import kotlinx.serialization.json.Json
 import com.yossibank.shared.generated.model.PaginatedPokemonSummaryList as ListResponse
 
 sealed interface PokemonListFailure {
-    /**
-     * 文言と違って消費側の裁量ではない。分類を増やしたときに
-     * 消費側ごとに判断が割れるのを防ぐため、ここで決める。
-     */
     val canRetry: Boolean
 
     data object Offline : PokemonListFailure {
@@ -35,10 +31,6 @@ sealed interface PokemonListFailure {
     }
 }
 
-/**
- * 失敗しても pokemon には直前までの累積が入る。消費側が「失敗したら前の値を残す」
- * を各自で実装すると OS ごとにずれるため、ここで一本化する。
- */
 data class PokemonListResult(
     val pokemon: List<PokemonEntry>,
     val hasMore: Boolean,
@@ -56,11 +48,6 @@ internal sealed interface PokemonPageResult {
     ) : PokemonPageResult
 }
 
-/**
- * Kotlin の引数既定値は Swift に渡らないため、iOS からは全引数を要求する
- * イニシャライザしか見えない。Ktor の HttpClient を Swift 側で組めないので、
- * 既定の依存だけで作れる経路を用意する。
- */
 class PokemonApi internal constructor(
     private val baseUrl: String,
     private val client: HttpClient,
@@ -97,8 +84,6 @@ class PokemonApi internal constructor(
     }
 
     internal suspend fun fetchDetail(id: Int): PokemonDetail? = optional("$baseUrl/api/v2/pokemon/$id/")
-
-    internal suspend fun fetchSpecies(id: Int): PokemonSpecies? = optional("$baseUrl/api/v2/pokemon-species/$id/")
 
     private suspend inline fun <reified T> optional(url: String): T? = try {
         val response = client.get(url)

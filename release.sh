@@ -1,7 +1,4 @@
 #!/bin/bash
-#
-#   ./release.sh 0.3.0
-#
 set -euo pipefail
 
 MODULE="shared"
@@ -23,9 +20,6 @@ if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     exit 1
 fi
 
-# リリース済みバージョンは上書きしない。
-# GitHub Packages は同一バージョンの再 publish を 409 で拒否するため、
-# タグだけ差し替えると Maven 側と整合しなくなる。
 if git rev-parse "$TAG" >/dev/null 2>&1 || gh release view "$TAG" >/dev/null 2>&1; then
     echo "${TAG} は既に存在します。バージョンを上げてください。" >&2
     exit 1
@@ -36,14 +30,11 @@ if [ -n "$(git status --porcelain)" ]; then
     exit 1
 fi
 
-# GitHub Actions 上では両方あらかじめ設定されているため素通りする。
 export GITHUB_ACTOR="${GITHUB_ACTOR:-$(gh api user --jq .login)}"
 export GITHUB_TOKEN="${GITHUB_TOKEN:-$(gh auth token)}"
 
 echo "▶ ${TAG} のリリースを開始します"
 
-# version を先に確定させる。このあとの publish がこの値を読むので、
-# ビルドより前でなければならない。
 sed -i '' "s/^version = \".*\"$/version = \"${VERSION}\"/" "$BUILD_FILE"
 echo "  version = ${VERSION} を ${BUILD_FILE} に書き込みました"
 
@@ -53,8 +44,6 @@ CHECKSUM="$(cat "$CHECKSUM_FILE")"
 
 ./gradlew ":${MODULE}:publishAllPublicationsToGitHubPackagesRepository"
 
-# ドラフトならタグがまだ無くても作れるので、「アセットの URL が確定しないと
-# Package.swift を書けない」順序の循環を避けられる。
 cleanup_draft() { gh release delete "$TAG" --yes >/dev/null 2>&1 || true; }
 trap cleanup_draft ERR
 
@@ -69,13 +58,10 @@ for _ in $(seq 1 10); do
 done
 [ -n "$ASSET_URL" ] || { echo "アセットの API URL を取得できませんでした" >&2; exit 1; }
 
-# SPM は URL の拡張子で妥当性を判定するため .zip を付ける。
-# GitHub 側は末尾の .zip を無視して同じバイナリを返す。
 ASSET_URL="${ASSET_URL}.zip"
 
 cat > Package.swift <<EOF
 // swift-tools-version: 6.0
-// このファイルは release.sh が生成する。手で編集しないこと。
 import PackageDescription
 
 let package = Package(
