@@ -105,6 +105,15 @@ sealed interface com.yossibank.shared/PokemonFailure { // com.yossibank.shared/P
         final fun toString(): kotlin/String // com.yossibank.shared/PokemonFailure.Server.toString|toString(){}[0]
     }
 
+    final object Closed : com.yossibank.shared/PokemonFailure { // com.yossibank.shared/PokemonFailure.Closed|null[0]
+        final val canRetry // com.yossibank.shared/PokemonFailure.Closed.canRetry|{}canRetry[0]
+            final fun <get-canRetry>(): kotlin/Boolean // com.yossibank.shared/PokemonFailure.Closed.canRetry.<get-canRetry>|<get-canRetry>(){}[0]
+
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.yossibank.shared/PokemonFailure.Closed.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.yossibank.shared/PokemonFailure.Closed.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // com.yossibank.shared/PokemonFailure.Closed.toString|toString(){}[0]
+    }
+
     final object Offline : com.yossibank.shared/PokemonFailure { // com.yossibank.shared/PokemonFailure.Offline|null[0]
         final val canRetry // com.yossibank.shared/PokemonFailure.Offline.canRetry|{}canRetry[0]
             final fun <get-canRetry>(): kotlin/Boolean // com.yossibank.shared/PokemonFailure.Offline.canRetry.<get-canRetry>|<get-canRetry>(){}[0]
@@ -134,27 +143,35 @@ sealed interface com.yossibank.shared/PokemonFailure { // com.yossibank.shared/P
 }
 
 sealed interface com.yossibank.shared/PokemonListResult { // com.yossibank.shared/PokemonListResult|null[0]
-    abstract val hasMore // com.yossibank.shared/PokemonListResult.hasMore|{}hasMore[0]
-        abstract fun <get-hasMore>(): kotlin/Boolean // com.yossibank.shared/PokemonListResult.hasMore.<get-hasMore>|<get-hasMore>(){}[0]
-    abstract val pokemon // com.yossibank.shared/PokemonListResult.pokemon|{}pokemon[0]
-        abstract fun <get-pokemon>(): kotlin.collections/List<com.yossibank.shared/PokemonEntry> // com.yossibank.shared/PokemonListResult.pokemon.<get-pokemon>|<get-pokemon>(){}[0]
-    open val incompleteCount // com.yossibank.shared/PokemonListResult.incompleteCount|{}incompleteCount[0]
-        open fun <get-incompleteCount>(): kotlin/Int // com.yossibank.shared/PokemonListResult.incompleteCount.<get-incompleteCount>|<get-incompleteCount>(){}[0]
+    final class Degraded : com.yossibank.shared/PokemonListResult { // com.yossibank.shared/PokemonListResult.Degraded|null[0]
+        constructor <init>(kotlin.collections/List<com.yossibank.shared/PokemonEntry>, kotlin/Boolean, com.yossibank.shared/PokemonFailure) // com.yossibank.shared/PokemonListResult.Degraded.<init>|<init>(kotlin.collections.List<com.yossibank.shared.PokemonEntry>;kotlin.Boolean;com.yossibank.shared.PokemonFailure){}[0]
+
+        final val failure // com.yossibank.shared/PokemonListResult.Degraded.failure|{}failure[0]
+            final fun <get-failure>(): com.yossibank.shared/PokemonFailure // com.yossibank.shared/PokemonListResult.Degraded.failure.<get-failure>|<get-failure>(){}[0]
+        final val hasMore // com.yossibank.shared/PokemonListResult.Degraded.hasMore|{}hasMore[0]
+            final fun <get-hasMore>(): kotlin/Boolean // com.yossibank.shared/PokemonListResult.Degraded.hasMore.<get-hasMore>|<get-hasMore>(){}[0]
+        final val incompleteCount // com.yossibank.shared/PokemonListResult.Degraded.incompleteCount|{}incompleteCount[0]
+            final fun <get-incompleteCount>(): kotlin/Int // com.yossibank.shared/PokemonListResult.Degraded.incompleteCount.<get-incompleteCount>|<get-incompleteCount>(){}[0]
+        final val pokemon // com.yossibank.shared/PokemonListResult.Degraded.pokemon|{}pokemon[0]
+            final fun <get-pokemon>(): kotlin.collections/List<com.yossibank.shared/PokemonEntry> // com.yossibank.shared/PokemonListResult.Degraded.pokemon.<get-pokemon>|<get-pokemon>(){}[0]
+
+        final fun component1(): kotlin.collections/List<com.yossibank.shared/PokemonEntry> // com.yossibank.shared/PokemonListResult.Degraded.component1|component1(){}[0]
+        final fun component2(): kotlin/Boolean // com.yossibank.shared/PokemonListResult.Degraded.component2|component2(){}[0]
+        final fun component3(): com.yossibank.shared/PokemonFailure // com.yossibank.shared/PokemonListResult.Degraded.component3|component3(){}[0]
+        final fun copy(kotlin.collections/List<com.yossibank.shared/PokemonEntry> = ..., kotlin/Boolean = ..., com.yossibank.shared/PokemonFailure = ...): com.yossibank.shared/PokemonListResult.Degraded // com.yossibank.shared/PokemonListResult.Degraded.copy|copy(kotlin.collections.List<com.yossibank.shared.PokemonEntry>;kotlin.Boolean;com.yossibank.shared.PokemonFailure){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.yossibank.shared/PokemonListResult.Degraded.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.yossibank.shared/PokemonListResult.Degraded.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // com.yossibank.shared/PokemonListResult.Degraded.toString|toString(){}[0]
+    }
 
     final class Failed : com.yossibank.shared/PokemonListResult { // com.yossibank.shared/PokemonListResult.Failed|null[0]
-        constructor <init>(kotlin.collections/List<com.yossibank.shared/PokemonEntry>, kotlin/Boolean, com.yossibank.shared/PokemonFailure) // com.yossibank.shared/PokemonListResult.Failed.<init>|<init>(kotlin.collections.List<com.yossibank.shared.PokemonEntry>;kotlin.Boolean;com.yossibank.shared.PokemonFailure){}[0]
+        constructor <init>(com.yossibank.shared/PokemonFailure) // com.yossibank.shared/PokemonListResult.Failed.<init>|<init>(com.yossibank.shared.PokemonFailure){}[0]
 
         final val failure // com.yossibank.shared/PokemonListResult.Failed.failure|{}failure[0]
             final fun <get-failure>(): com.yossibank.shared/PokemonFailure // com.yossibank.shared/PokemonListResult.Failed.failure.<get-failure>|<get-failure>(){}[0]
-        final val hasMore // com.yossibank.shared/PokemonListResult.Failed.hasMore|{}hasMore[0]
-            final fun <get-hasMore>(): kotlin/Boolean // com.yossibank.shared/PokemonListResult.Failed.hasMore.<get-hasMore>|<get-hasMore>(){}[0]
-        final val pokemon // com.yossibank.shared/PokemonListResult.Failed.pokemon|{}pokemon[0]
-            final fun <get-pokemon>(): kotlin.collections/List<com.yossibank.shared/PokemonEntry> // com.yossibank.shared/PokemonListResult.Failed.pokemon.<get-pokemon>|<get-pokemon>(){}[0]
 
-        final fun component1(): kotlin.collections/List<com.yossibank.shared/PokemonEntry> // com.yossibank.shared/PokemonListResult.Failed.component1|component1(){}[0]
-        final fun component2(): kotlin/Boolean // com.yossibank.shared/PokemonListResult.Failed.component2|component2(){}[0]
-        final fun component3(): com.yossibank.shared/PokemonFailure // com.yossibank.shared/PokemonListResult.Failed.component3|component3(){}[0]
-        final fun copy(kotlin.collections/List<com.yossibank.shared/PokemonEntry> = ..., kotlin/Boolean = ..., com.yossibank.shared/PokemonFailure = ...): com.yossibank.shared/PokemonListResult.Failed // com.yossibank.shared/PokemonListResult.Failed.copy|copy(kotlin.collections.List<com.yossibank.shared.PokemonEntry>;kotlin.Boolean;com.yossibank.shared.PokemonFailure){}[0]
+        final fun component1(): com.yossibank.shared/PokemonFailure // com.yossibank.shared/PokemonListResult.Failed.component1|component1(){}[0]
+        final fun copy(com.yossibank.shared/PokemonFailure = ...): com.yossibank.shared/PokemonListResult.Failed // com.yossibank.shared/PokemonListResult.Failed.copy|copy(com.yossibank.shared.PokemonFailure){}[0]
         final fun equals(kotlin/Any?): kotlin/Boolean // com.yossibank.shared/PokemonListResult.Failed.equals|equals(kotlin.Any?){}[0]
         final fun hashCode(): kotlin/Int // com.yossibank.shared/PokemonListResult.Failed.hashCode|hashCode(){}[0]
         final fun toString(): kotlin/String // com.yossibank.shared/PokemonListResult.Failed.toString|toString(){}[0]
@@ -165,6 +182,8 @@ sealed interface com.yossibank.shared/PokemonListResult { // com.yossibank.share
 
         final val hasMore // com.yossibank.shared/PokemonListResult.Loaded.hasMore|{}hasMore[0]
             final fun <get-hasMore>(): kotlin/Boolean // com.yossibank.shared/PokemonListResult.Loaded.hasMore.<get-hasMore>|<get-hasMore>(){}[0]
+        final val incompleteCount // com.yossibank.shared/PokemonListResult.Loaded.incompleteCount|{}incompleteCount[0]
+            final fun <get-incompleteCount>(): kotlin/Int // com.yossibank.shared/PokemonListResult.Loaded.incompleteCount.<get-incompleteCount>|<get-incompleteCount>(){}[0]
         final val pokemon // com.yossibank.shared/PokemonListResult.Loaded.pokemon|{}pokemon[0]
             final fun <get-pokemon>(): kotlin.collections/List<com.yossibank.shared/PokemonEntry> // com.yossibank.shared/PokemonListResult.Loaded.pokemon.<get-pokemon>|<get-pokemon>(){}[0]
 
@@ -175,20 +194,11 @@ sealed interface com.yossibank.shared/PokemonListResult { // com.yossibank.share
         final fun hashCode(): kotlin/Int // com.yossibank.shared/PokemonListResult.Loaded.hashCode|hashCode(){}[0]
         final fun toString(): kotlin/String // com.yossibank.shared/PokemonListResult.Loaded.toString|toString(){}[0]
     }
-}
 
-final class com.yossibank.shared/PokemonApi { // com.yossibank.shared/PokemonApi|null[0]
-    constructor <init>() // com.yossibank.shared/PokemonApi.<init>|<init>(){}[0]
-
-    final fun close() // com.yossibank.shared/PokemonApi.close|close(){}[0]
-
-    final object Companion { // com.yossibank.shared/PokemonApi.Companion|null[0]
-        final const val CONNECT_TIMEOUT_MILLIS // com.yossibank.shared/PokemonApi.Companion.CONNECT_TIMEOUT_MILLIS|{}CONNECT_TIMEOUT_MILLIS[0]
-            final fun <get-CONNECT_TIMEOUT_MILLIS>(): kotlin/Long // com.yossibank.shared/PokemonApi.Companion.CONNECT_TIMEOUT_MILLIS.<get-CONNECT_TIMEOUT_MILLIS>|<get-CONNECT_TIMEOUT_MILLIS>(){}[0]
-        final const val PAGE_SIZE // com.yossibank.shared/PokemonApi.Companion.PAGE_SIZE|{}PAGE_SIZE[0]
-            final fun <get-PAGE_SIZE>(): kotlin/Int // com.yossibank.shared/PokemonApi.Companion.PAGE_SIZE.<get-PAGE_SIZE>|<get-PAGE_SIZE>(){}[0]
-        final const val REQUEST_TIMEOUT_MILLIS // com.yossibank.shared/PokemonApi.Companion.REQUEST_TIMEOUT_MILLIS|{}REQUEST_TIMEOUT_MILLIS[0]
-            final fun <get-REQUEST_TIMEOUT_MILLIS>(): kotlin/Long // com.yossibank.shared/PokemonApi.Companion.REQUEST_TIMEOUT_MILLIS.<get-REQUEST_TIMEOUT_MILLIS>|<get-REQUEST_TIMEOUT_MILLIS>(){}[0]
+    final object Stale : com.yossibank.shared/PokemonListResult { // com.yossibank.shared/PokemonListResult.Stale|null[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.yossibank.shared/PokemonListResult.Stale.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.yossibank.shared/PokemonListResult.Stale.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // com.yossibank.shared/PokemonListResult.Stale.toString|toString(){}[0]
     }
 }
 
@@ -233,6 +243,7 @@ final class com.yossibank.shared/PokemonPager { // com.yossibank.shared/PokemonP
     final fun close() // com.yossibank.shared/PokemonPager.close|close(){}[0]
     final suspend fun loadNext(): com.yossibank.shared/PokemonListResult // com.yossibank.shared/PokemonPager.loadNext|loadNext(){}[0]
     final suspend fun reset() // com.yossibank.shared/PokemonPager.reset|reset(){}[0]
+    final suspend fun retryMissingDetails(): com.yossibank.shared/PokemonListResult // com.yossibank.shared/PokemonPager.retryMissingDetails|retryMissingDetails(){}[0]
 
     final object Companion { // com.yossibank.shared/PokemonPager.Companion|null[0]
         final const val PREFETCH_DISTANCE // com.yossibank.shared/PokemonPager.Companion.PREFETCH_DISTANCE|{}PREFETCH_DISTANCE[0]
