@@ -59,10 +59,30 @@ jobs:
       - name: Verify
         run: make verify
 
+      - name: Pick the consumer branches to build against
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          resolve() {
+            ref=main
+
+            if [ -n "$HEAD_REF" ] && git ls-remote --exit-code --heads \
+                 "https://github.com/yossibank/$1" "$HEAD_REF" >/dev/null 2>&1; then
+              ref="$HEAD_REF"
+            fi
+
+            echo "$2=$ref" >> "$GITHUB_ENV"
+            echo "$1 -> $ref"
+          }
+
+          resolve android-app-template ANDROID_REF
+          resolve ios-app-template IOS_REF
+
       - name: Check out the Android app
         uses: actions/checkout@v7
         with:
           repository: yossibank/android-app-template
+          ref: ${{ env.ANDROID_REF }}
           path: consumer-android
           token: ${{ secrets.SHARED_CORE_TOKEN || secrets.GITHUB_TOKEN }}
 
@@ -83,6 +103,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: yossibank/ios-app-template
+          ref: ${{ env.IOS_REF }}
           path: consumer-ios
           token: ${{ secrets.SHARED_CORE_TOKEN || secrets.GITHUB_TOKEN }}
 
