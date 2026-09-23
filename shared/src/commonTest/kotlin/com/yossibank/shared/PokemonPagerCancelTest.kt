@@ -108,6 +108,26 @@ class PokemonPagerCancelTest {
     }
 
     @Test
+    fun a_load_overtaken_by_reset_says_its_result_is_stale() = runTest {
+        withContext(Dispatchers.Default) {
+            val server = StallingServer()
+            val pager = server.pager()
+
+            val inFlight = async { pager.loadNext() }
+            server.firstPageStarted.await()
+
+            withTimeout(5_000) { pager.reset() }
+            server.release.complete(Unit)
+
+            assertEquals(
+                PokemonListResult.Stale,
+                withTimeout(5_000) { inFlight.await() },
+                "捨てられた取得の結果が、本物の空リストと区別できない",
+            )
+        }
+    }
+
+    @Test
     fun a_cancelled_load_leaves_no_entries_behind() = runTest {
         withContext(Dispatchers.Default) {
             val server = StallingServer()

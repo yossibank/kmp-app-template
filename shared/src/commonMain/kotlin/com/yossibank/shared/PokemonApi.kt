@@ -17,48 +17,11 @@ import io.ktor.client.request.parameter
 import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.serialization.json.Json
+import kotlin.concurrent.Volatile
 import com.yossibank.shared.generated.model.PaginatedPokemonSummaryList as ListResponse
-
-sealed interface PokemonFailure {
-    val canRetry: Boolean
-
-    data object Offline : PokemonFailure {
-        override val canRetry = true
-    }
-
-    data object Timeout : PokemonFailure {
-        override val canRetry = true
-    }
-
-    data class Server(
-        val statusCode: Int,
-    ) : PokemonFailure {
-        override val canRetry = statusCode == 429 || statusCode >= 500
-    }
-
-    data object Unexpected : PokemonFailure {
-        override val canRetry = false
-    }
-}
-
-sealed interface PokemonListResult {
-    val pokemon: List<PokemonEntry>
-    val hasMore: Boolean
-
-    val incompleteCount: Int get() = pokemon.count { it.detail is PokemonEntryDetail.Missing }
-
-    data class Loaded(
-        override val pokemon: List<PokemonEntry>,
-        override val hasMore: Boolean,
-    ) : PokemonListResult
-
-    data class Failed(
-        override val pokemon: List<PokemonEntry>,
-        override val hasMore: Boolean,
-        val failure: PokemonFailure,
-    ) : PokemonListResult
-}
 
 internal sealed interface FetchOutcome<out T> {
     data class Ok<T>(
@@ -80,11 +43,12 @@ internal data class PokemonPage(
     val hasMore: Boolean,
 )
 
-class PokemonApi internal constructor(
-    private val baseUrl: String,
-    engine: HttpClientEngine?,
+internal class PokemonApi(
+    private val baseUrl: String = DEFAULT_BASE_URL,
+    engine: HttpClientEngine? = null,
 ) {
-    constructor() : this(DEFAULT_BASE_URL, engine = null)
+    @Volatile
+    private var closed = false
 
     private val client: HttpClient =
         if (engine == null) {
@@ -93,7 +57,7 @@ class PokemonApi internal constructor(
             HttpClient(engine) { installDefaults() }
         }
 
-    internal suspend fun fetchPage(
+    suspend fun fetchPage(
         limit: Int = PAGE_SIZE,
         offset: Int = 0,
     ): FetchOutcome<PokemonPage> = fetch<ListResponse>("$baseUrl/api/v2/pokemon/") {
@@ -101,17 +65,30 @@ class PokemonApi internal constructor(
         parameter("offset", offset)
     }.map { PokemonPage(pokemon = it.results, hasMore = it.next != null) }
 
-    internal suspend fun fetchDetail(id: Int): FetchOutcome<PokemonDetail> = fetch("$baseUrl/api/v2/pokemon/$id/")
+    suspend fun fetchDetail(id: Int): FetchOutcome<PokemonDetail> = fetch("$baseUrl/api/v2/pokemon/$id/")
 
-    fun close() = client.close()
+    fun close() {
+        closed = true
+        client.close()
+    }
 
     private suspend inline fun <reified T> fetch(
         url: String,
         crossinline configure: HttpRequestBuilder.() -> Unit = {},
     ): FetchOutcome<T> {
+        if (closed) {
+            return FetchOutcome.Err(PokemonFailure.Closed)
+        }
+
         val response = try {
             client.get(url) { configure() }
         } catch (e: CancellationException) {
+            currentCoroutineContext().ensureActive()
+
+            if (closed) {
+                return FetchOutcome.Err(PokemonFailure.Closed)
+            }
+
             throw e
         } catch (e: Exception) {
             return FetchOutcome.Err(if (e.isTimeout()) PokemonFailure.Timeout else PokemonFailure.Offline)
@@ -124,6 +101,12 @@ class PokemonApi internal constructor(
         return try {
             FetchOutcome.Ok(response.body<T>())
         } catch (e: CancellationException) {
+            currentCoroutineContext().ensureActive()
+
+            if (closed) {
+                return FetchOutcome.Err(PokemonFailure.Closed)
+            }
+
             throw e
         } catch (e: Exception) {
             FetchOutcome.Err(PokemonFailure.Unexpected)

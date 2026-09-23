@@ -120,18 +120,20 @@ data class PokemonEntry(
         ): PokemonEntry = PokemonEntry(
             id = id,
             name = summary.name,
-            detail = PokemonEntryDetail.Loaded(
-                spriteUrl = detail.sprites.frontDefault,
-                types = detail.types
-                    .sortedBy { it.slot }
-                    .map { PokemonTypeKind.from(it.type.name) },
-                baseStats = detail.stats.map {
-                    PokemonBaseStat(
-                        kind = PokemonStatKind.from(it.stat.name),
-                        value = it.baseStat,
-                    )
-                },
-            ),
+            detail = detailOf(detail),
+        )
+
+        fun detailOf(detail: PokemonDetail): PokemonEntryDetail.Loaded = PokemonEntryDetail.Loaded(
+            spriteUrl = detail.sprites.frontDefault,
+            types = detail.types
+                .sortedBy { it.slot }
+                .map { PokemonTypeKind.from(it.type.name) },
+            baseStats = detail.stats.map {
+                PokemonBaseStat(
+                    kind = PokemonStatKind.from(it.stat.name),
+                    value = it.baseStat,
+                )
+            },
         )
     }
 }

@@ -26,7 +26,7 @@ class PokemonPager internal constructor(
         val start = stateMutex.withLock { Snapshot(nextOffset, exhausted, generation) }
 
         if (start.exhausted) {
-            return@withLock stateMutex.withLock { loaded() }
+            return@withLock stateMutex.withLock { result(failure = null) }
         }
 
         when (val page = api.fetchPage(limit = pageSize, offset = start.offset)) {
@@ -34,16 +34,56 @@ class PokemonPager internal constructor(
                 val entries = enrich(page.value.pokemon)
 
                 stateMutex.withLock {
-                    if (start.generation == generation) {
+                    if (start.generation != generation) {
+                        PokemonListResult.Stale
+                    } else {
                         loaded += entries
                         nextOffset += page.value.pokemon.size
-                        exhausted = !page.value.hasMore
+                        exhausted = !page.value.hasMore || page.value.pokemon.isEmpty()
+                        result(failure = null)
                     }
-                    loaded()
                 }
             }
 
-            is FetchOutcome.Err -> stateMutex.withLock { failed(page.reason) }
+            is FetchOutcome.Err -> stateMutex.withLock {
+                if (start.generation != generation) {
+                    PokemonListResult.Stale
+                } else {
+                    result(failure = page.reason)
+                }
+            }
+        }
+    }
+
+    suspend fun retryMissingDetails(): PokemonListResult = loadMutex.withLock {
+        val start = stateMutex.withLock { Snapshot(nextOffset, exhausted, generation) }
+        val targets = stateMutex.withLock {
+            loaded.filter { it.detail is PokemonEntryDetail.Missing }
+        }
+
+        if (targets.isEmpty()) {
+            return@withLock stateMutex.withLock { result(failure = null) }
+        }
+
+        val repaired = repair(targets)
+        val unresolved = repaired.mapNotNull { it.detail as? PokemonEntryDetail.Missing }
+
+        stateMutex.withLock {
+            if (start.generation != generation) {
+                PokemonListResult.Stale
+            } else {
+                repaired.forEach { entry ->
+                    val index = loaded.indexOfFirst { it.id == entry.id }
+
+                    if (index >= 0) {
+                        loaded[index] = entry
+                    }
+                }
+
+                result(
+                    failure = if (unresolved.size == targets.size) unresolved.first().failure else null,
+                )
+            }
         }
     }
 
@@ -56,16 +96,16 @@ class PokemonPager internal constructor(
 
     fun close() = api.close()
 
-    private fun loaded() = PokemonListResult.Loaded(
-        pokemon = loaded.toList(),
-        hasMore = !exhausted,
-    )
+    private fun result(failure: PokemonFailure?): PokemonListResult {
+        val pokemon = loaded.toList()
+        val hasMore = !exhausted
 
-    private fun failed(reason: PokemonFailure) = PokemonListResult.Failed(
-        pokemon = loaded.toList(),
-        hasMore = !exhausted,
-        failure = reason,
-    )
+        return when {
+            failure == null -> PokemonListResult.Loaded(pokemon, hasMore)
+            pokemon.isEmpty() -> PokemonListResult.Failed(failure)
+            else -> PokemonListResult.Degraded(pokemon, hasMore, failure)
+        }
+    }
 
     private suspend fun enrich(summaries: List<PokemonSummary>): List<PokemonEntry> = coroutineScope {
         val gate = Semaphore(DETAIL_CONCURRENCY)
@@ -84,6 +124,22 @@ class PokemonPager internal constructor(
                 }
             }.awaitAll()
             .filterNotNull()
+    }
+
+    private suspend fun repair(targets: List<PokemonEntry>): List<PokemonEntry> = coroutineScope {
+        val gate = Semaphore(DETAIL_CONCURRENCY)
+
+        targets
+            .map { entry ->
+                async {
+                    gate.withPermit {
+                        when (val detail = api.fetchDetail(entry.id)) {
+                            is FetchOutcome.Ok -> entry.copy(detail = PokemonEntry.detailOf(detail.value))
+                            is FetchOutcome.Err -> entry.copy(detail = PokemonEntryDetail.Missing(detail.reason))
+                        }
+                    }
+                }
+            }.awaitAll()
     }
 
     private data class Snapshot(

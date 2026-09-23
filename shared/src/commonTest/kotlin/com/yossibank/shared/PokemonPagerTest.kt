@@ -23,6 +23,7 @@ private class PageServer(
     private val delayMillis: Long = 0,
     private val detailFailsFor: Set<Int> = emptySet(),
     private val idlessAt: Set<Int> = emptySet(),
+    private val alwaysMore: Boolean = false,
 ) {
     val pageOffsets = mutableListOf<Int>()
 
@@ -70,7 +71,7 @@ private class PageServer(
                     respond(content = "", status = HttpStatusCode.InternalServerError, headers = json)
                 } else {
                     val ids = (offset until minOf(offset + limit, total)).toList()
-                    val next = if (offset + limit < total) "$TEST_BASE_URL/next" else null
+                    val next = if (alwaysMore || offset + limit < total) "$TEST_BASE_URL/next" else null
                     respond(content = pageJson(ids, next, idlessAt), status = HttpStatusCode.OK, headers = json)
                 }
             }
@@ -222,13 +223,39 @@ class PokemonPagerTest {
         val ok = assertIs<PokemonListResult.Loaded>(pager.loadNext())
         assertEquals(listOf("p0", "p1"), ok.pokemon.map { it.name })
 
-        val failed = assertIs<PokemonListResult.Failed>(pager.loadNext())
-        assertEquals(PokemonFailure.Server(500), failed.failure)
+        val degraded = assertIs<PokemonListResult.Degraded>(
+            pager.loadNext(),
+            "見せる行が残っているのに全滅扱いになっている",
+        )
+        assertEquals(PokemonFailure.Server(500), degraded.failure)
         assertEquals(
             listOf("p0", "p1"),
-            failed.pokemon.map { it.name },
+            degraded.pokemon.map { it.name },
             "失敗時に累積が落ちている",
         )
+    }
+
+    @Test
+    fun a_first_page_that_fails_has_nothing_to_degrade_to() = runTest {
+        val pager = PageServer(total = 6, failFrom = 0).pager(pageSize = 2)
+
+        val failed = assertIs<PokemonListResult.Failed>(
+            pager.loadNext(),
+            "見せる行が 1 つも無いのに部分成功として返っている",
+        )
+        assertEquals(PokemonFailure.Server(500), failed.failure)
+    }
+
+    @Test
+    fun an_empty_page_that_still_claims_more_ends_the_list() = runTest {
+        val server = PageServer(total = 0, alwaysMore = true)
+        val pager = server.pager(pageSize = 2)
+
+        val first = assertIs<PokemonListResult.Loaded>(pager.loadNext())
+        assertFalse(first.hasMore, "0 件のページを受け取ったのに続きがあると言っている")
+
+        pager.loadNext()
+        assertEquals(listOf(0), server.pageOffsets, "同じ offset を問い合わせ続けている")
     }
 
     @Test
