@@ -72,7 +72,11 @@ private class PageServer(
                 } else {
                     val ids = (offset until minOf(offset + limit, total)).toList()
                     val next = if (alwaysMore || offset + limit < total) "$TEST_BASE_URL/next" else null
-                    respond(content = pageJson(ids, next, idlessAt), status = HttpStatusCode.OK, headers = json)
+                    respond(
+                        content = pageJson(ids, next, idlessAt, count = total),
+                        status = HttpStatusCode.OK,
+                        headers = json,
+                    )
                 }
             }
         }
@@ -234,6 +238,16 @@ class PokemonPagerTest {
             degraded.pokemon.map { it.name },
             "失敗時に累積が落ちている",
         )
+    }
+
+    @Test
+    fun the_result_says_how_many_there_are_in_all() = runTest {
+        val pager = PageServer(total = 57).pager(pageSize = 2)
+
+        val loaded = assertIs<PokemonListResult.Loaded>(pager.loadNext())
+
+        assertEquals(57, loaded.total, "応答が持っている全体件数を捨てている")
+        assertEquals(2, loaded.pokemon.size)
     }
 
     @Test

@@ -41,6 +41,7 @@ internal inline fun <T, R> FetchOutcome<T>.map(transform: (T) -> R): FetchOutcom
 internal data class PokemonPage(
     val pokemon: List<PokemonSummary>,
     val hasMore: Boolean,
+    val total: Int,
 )
 
 internal class PokemonApi(
@@ -63,7 +64,7 @@ internal class PokemonApi(
     ): FetchOutcome<PokemonPage> = fetch<ListResponse>("$baseUrl/api/v2/pokemon/") {
         parameter("limit", limit)
         parameter("offset", offset)
-    }.map { PokemonPage(pokemon = it.results, hasMore = it.next != null) }
+    }.map { PokemonPage(pokemon = it.results, hasMore = it.next != null, total = it.count) }
 
     suspend fun fetchDetail(id: Int): FetchOutcome<PokemonDetail> = fetch("$baseUrl/api/v2/pokemon/$id/")
 

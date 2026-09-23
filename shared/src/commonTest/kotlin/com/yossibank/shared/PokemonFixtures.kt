@@ -71,11 +71,12 @@ internal fun pageJson(
     ids: List<Int>,
     next: String?,
     idless: Set<Int> = emptySet(),
+    count: Int = 1302,
 ): String {
     val results = ids.joinToString(",") {
         val url = if (it in idless) "$TEST_BASE_URL/api/v2/pokemon/" else summaryUrl(it)
         """{"name":"p$it","url":"$url"}"""
     }
     val nextValue = next?.let { "\"$it\"" } ?: "null"
-    return """{"count":1302,"next":$nextValue,"previous":null,"results":[$results]}"""
+    return """{"count":$count,"next":$nextValue,"previous":null,"results":[$results]}"""
 }

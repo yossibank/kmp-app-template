@@ -19,6 +19,7 @@ class PokemonPager internal constructor(
     private val stateMutex = Mutex()
     private val loaded = mutableListOf<PokemonEntry>()
     private var nextOffset = 0
+    private var total = 0
     private var exhausted = false
     private var generation = 0
 
@@ -39,6 +40,7 @@ class PokemonPager internal constructor(
                     } else {
                         loaded += entries
                         nextOffset += page.value.pokemon.size
+                        total = page.value.total
                         exhausted = !page.value.hasMore || page.value.pokemon.isEmpty()
                         result(failure = null)
                     }
@@ -90,6 +92,7 @@ class PokemonPager internal constructor(
     suspend fun reset() = stateMutex.withLock {
         loaded.clear()
         nextOffset = 0
+        total = 0
         exhausted = false
         generation += 1
     }
@@ -101,9 +104,9 @@ class PokemonPager internal constructor(
         val hasMore = !exhausted
 
         return when {
-            failure == null -> PokemonListResult.Loaded(pokemon, hasMore)
+            failure == null -> PokemonListResult.Loaded(pokemon, hasMore, total)
             pokemon.isEmpty() -> PokemonListResult.Failed(failure)
-            else -> PokemonListResult.Degraded(pokemon, hasMore, failure)
+            else -> PokemonListResult.Degraded(pokemon, hasMore, total, failure)
         }
     }
 
@@ -149,7 +152,7 @@ class PokemonPager internal constructor(
     )
 
     companion object {
-        const val PREFETCH_DISTANCE: Int = 3
+        const val PREFETCH_DISTANCE: Int = 8
 
         internal const val DETAIL_CONCURRENCY: Int = 6
     }
