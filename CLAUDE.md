@@ -51,8 +51,14 @@ shared/openapi/           モデル生成の元にする OpenAPI 定義
 ## 全体ルール
 
 - 変更したら `make verify` を通す。通らないものは完了ではない。
-- 公開 API を壊すときは、消費側 2 リポジトリを同じ作業時間に更新する。kmp を push してから
-  消費側を push し終えるまで kmp の CI は赤い。`@Deprecated` を挟んで猶予を作らない。
+- 公開 API を壊すときは、消費側 2 リポジトリを同じ作業時間に更新する。`@Deprecated` を挟んで
+  猶予を作らない。
+- 3 リポジトリに跨る変更は、3 つとも同じブランチ名にする。verify は消費側に同名ブランチが
+  あればそれを、無ければ main をビルドする。名前がずれると main に対して検証され、壊れた
+  ことに気づけない。
+- 消費側の PR は release の後に開く。publish されていないバージョンを pin した状態で開くと
+  解決できずに落ちる。消費側の CI は pull_request でしか走らないので、ブランチを push する
+  だけなら何も起きない。
 - publish 済みのバージョンを再 publish しない（GitHub Packages は 409 を返す）。
 - バージョンを `gradle/libs.versions.toml` 以外で指定しない。
 - `org.jetbrains.kotlin.android` を適用しない。`com.android.kotlin.multiplatform.library` を使う。
