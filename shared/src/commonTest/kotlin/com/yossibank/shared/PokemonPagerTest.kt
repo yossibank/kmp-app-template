@@ -111,6 +111,7 @@ class PokemonPagerTest {
 
         val detail = assertIs<PokemonEntryDetail.Loaded>(entry.detail)
         assertEquals("https://img.test/0.png", detail.spriteUrl)
+        assertEquals("https://img.test/artwork/0.png", detail.artworkUrl, "大きく出せる画像を捨てている")
         assertEquals(listOf(PokemonTypeKind.GRASS, PokemonTypeKind.POISON), detail.types)
         assertEquals(
             listOf(

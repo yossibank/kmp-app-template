@@ -7854,8 +7854,24 @@ components:
           type:
           - string
           - 'null'
+        other:
+          allOf:
+          - $ref: '#/components/schemas/PokemonSpritesOther'
       required:
       - front_default
+    PokemonSpritesOther:
+      type: object
+      properties:
+        official-artwork:
+          allOf:
+          - $ref: '#/components/schemas/PokemonArtwork'
+    PokemonArtwork:
+      type: object
+      properties:
+        front_default:
+          type:
+          - string
+          - 'null'
     PokemonStat:
       type: object
       properties:

@@ -15,6 +15,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 private val PAGE_JSON = pageJson(
@@ -120,6 +121,35 @@ class PokemonApiTest {
         assertEquals("https://img.test/1.png", detail.sprites.frontDefault)
         assertEquals(listOf("grass", "poison"), detail.types.map { it.type.name })
         assertEquals(listOf(45, 49), detail.stats.map { it.baseStat })
+    }
+
+    @Test
+    fun fetchDetail_reads_the_large_artwork_beside_the_small_sprite() = runTest {
+        val outcome = api(body = detailJson(id = 1)).fetchDetail(1)
+
+        val detail = assertIs<FetchOutcome.Ok<PokemonDetail>>(outcome).value
+
+        assertEquals(
+            "https://img.test/artwork/1.png",
+            detail.sprites.other
+                ?.officialArtwork
+                ?.frontDefault,
+            "同じ応答に入っている大きい画像を読み落としている",
+        )
+    }
+
+    @Test
+    fun a_detail_without_artwork_still_decodes() = runTest {
+        val outcome = api(body = detailJson(id = 1, artwork = null)).fetchDetail(1)
+
+        val detail = assertIs<FetchOutcome.Ok<PokemonDetail>>(outcome, "画像が無いだけで応答全体が読めなくなっている").value
+
+        assertEquals("https://img.test/1.png", detail.sprites.frontDefault)
+        assertNull(
+            detail.sprites.other
+                ?.officialArtwork
+                ?.frontDefault,
+        )
     }
 
     @Test

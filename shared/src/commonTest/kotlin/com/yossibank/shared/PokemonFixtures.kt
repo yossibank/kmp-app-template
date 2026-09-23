@@ -6,12 +6,16 @@ internal fun detailJson(
     id: Int,
     name: String = "p$id",
     sprite: String? = "https://img.test/$id.png",
+    artwork: String? = "https://img.test/artwork/$id.png",
     types: List<String> = listOf("grass", "poison"),
     stats: List<Pair<String, Int>> = listOf("hp" to 45, "attack" to 49),
     height: Int? = 7,
     weight: Int? = 69,
 ): String {
     val spriteValue = sprite?.let { "\"$it\"" } ?: "null"
+    val artworkBlock = artwork
+        ?.let { ""","other":{"official-artwork":{"front_default":"$it"}}""" }
+        ?: ""
     val typeItems = types.mapIndexed { index, type ->
         """{"slot":${index + 1},"type":{"name":"$type","url":"$TEST_BASE_URL/api/v2/type/$type/"}}"""
     }
@@ -42,7 +46,7 @@ internal fun detailJson(
           ],
           "location_area_encounters": "",
           "species": { "name": "$name", "url": "$TEST_BASE_URL/api/v2/pokemon-species/$id/" },
-          "sprites": { "front_default": $spriteValue },
+          "sprites": { "front_default": $spriteValue$artworkBlock },
           "cries": { "latest": null, "legacy": null },
           "stats": [${statItems.joinToString(",")}],
           "past_stats": [],
