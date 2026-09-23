@@ -81,6 +81,7 @@ data class PokemonBaseStat(
 sealed interface PokemonEntryDetail {
     data class Loaded(
         val spriteUrl: String?,
+        val artworkUrl: String?,
         val types: List<PokemonTypeKind>,
         val baseStats: List<PokemonBaseStat>,
     ) : PokemonEntryDetail {
@@ -125,6 +126,9 @@ data class PokemonEntry(
 
         fun detailOf(detail: PokemonDetail): PokemonEntryDetail.Loaded = PokemonEntryDetail.Loaded(
             spriteUrl = detail.sprites.frontDefault,
+            artworkUrl = detail.sprites.other
+                ?.officialArtwork
+                ?.frontDefault,
             types = detail.types
                 .sortedBy { it.slot }
                 .map { PokemonTypeKind.from(it.type.name) },

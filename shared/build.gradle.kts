@@ -179,6 +179,8 @@ openApiGenerate {
                 "AbilitySummary",
                 "GenerationSummary",
                 "ItemSummary",
+                "PokemonArtwork",
+                "PokemonSpritesOther",
                 "PaginatedPokemonSummaryList",
                 "PokemonAbility",
                 "PokemonAbilityPast",

@@ -52,8 +52,10 @@ final enum class com.yossibank.shared/PokemonTypeKind : kotlin/Enum<com.yossiban
 
 sealed interface com.yossibank.shared/PokemonEntryDetail { // com.yossibank.shared/PokemonEntryDetail|null[0]
     final class Loaded : com.yossibank.shared/PokemonEntryDetail { // com.yossibank.shared/PokemonEntryDetail.Loaded|null[0]
-        constructor <init>(kotlin/String?, kotlin.collections/List<com.yossibank.shared/PokemonTypeKind>, kotlin.collections/List<com.yossibank.shared/PokemonBaseStat>) // com.yossibank.shared/PokemonEntryDetail.Loaded.<init>|<init>(kotlin.String?;kotlin.collections.List<com.yossibank.shared.PokemonTypeKind>;kotlin.collections.List<com.yossibank.shared.PokemonBaseStat>){}[0]
+        constructor <init>(kotlin/String?, kotlin/String?, kotlin.collections/List<com.yossibank.shared/PokemonTypeKind>, kotlin.collections/List<com.yossibank.shared/PokemonBaseStat>) // com.yossibank.shared/PokemonEntryDetail.Loaded.<init>|<init>(kotlin.String?;kotlin.String?;kotlin.collections.List<com.yossibank.shared.PokemonTypeKind>;kotlin.collections.List<com.yossibank.shared.PokemonBaseStat>){}[0]
 
+        final val artworkUrl // com.yossibank.shared/PokemonEntryDetail.Loaded.artworkUrl|{}artworkUrl[0]
+            final fun <get-artworkUrl>(): kotlin/String? // com.yossibank.shared/PokemonEntryDetail.Loaded.artworkUrl.<get-artworkUrl>|<get-artworkUrl>(){}[0]
         final val baseStats // com.yossibank.shared/PokemonEntryDetail.Loaded.baseStats|{}baseStats[0]
             final fun <get-baseStats>(): kotlin.collections/List<com.yossibank.shared/PokemonBaseStat> // com.yossibank.shared/PokemonEntryDetail.Loaded.baseStats.<get-baseStats>|<get-baseStats>(){}[0]
         final val spriteUrl // com.yossibank.shared/PokemonEntryDetail.Loaded.spriteUrl|{}spriteUrl[0]
@@ -64,9 +66,10 @@ sealed interface com.yossibank.shared/PokemonEntryDetail { // com.yossibank.shar
             final fun <get-types>(): kotlin.collections/List<com.yossibank.shared/PokemonTypeKind> // com.yossibank.shared/PokemonEntryDetail.Loaded.types.<get-types>|<get-types>(){}[0]
 
         final fun component1(): kotlin/String? // com.yossibank.shared/PokemonEntryDetail.Loaded.component1|component1(){}[0]
-        final fun component2(): kotlin.collections/List<com.yossibank.shared/PokemonTypeKind> // com.yossibank.shared/PokemonEntryDetail.Loaded.component2|component2(){}[0]
-        final fun component3(): kotlin.collections/List<com.yossibank.shared/PokemonBaseStat> // com.yossibank.shared/PokemonEntryDetail.Loaded.component3|component3(){}[0]
-        final fun copy(kotlin/String? = ..., kotlin.collections/List<com.yossibank.shared/PokemonTypeKind> = ..., kotlin.collections/List<com.yossibank.shared/PokemonBaseStat> = ...): com.yossibank.shared/PokemonEntryDetail.Loaded // com.yossibank.shared/PokemonEntryDetail.Loaded.copy|copy(kotlin.String?;kotlin.collections.List<com.yossibank.shared.PokemonTypeKind>;kotlin.collections.List<com.yossibank.shared.PokemonBaseStat>){}[0]
+        final fun component2(): kotlin/String? // com.yossibank.shared/PokemonEntryDetail.Loaded.component2|component2(){}[0]
+        final fun component3(): kotlin.collections/List<com.yossibank.shared/PokemonTypeKind> // com.yossibank.shared/PokemonEntryDetail.Loaded.component3|component3(){}[0]
+        final fun component4(): kotlin.collections/List<com.yossibank.shared/PokemonBaseStat> // com.yossibank.shared/PokemonEntryDetail.Loaded.component4|component4(){}[0]
+        final fun copy(kotlin/String? = ..., kotlin/String? = ..., kotlin.collections/List<com.yossibank.shared/PokemonTypeKind> = ..., kotlin.collections/List<com.yossibank.shared/PokemonBaseStat> = ...): com.yossibank.shared/PokemonEntryDetail.Loaded // com.yossibank.shared/PokemonEntryDetail.Loaded.copy|copy(kotlin.String?;kotlin.String?;kotlin.collections.List<com.yossibank.shared.PokemonTypeKind>;kotlin.collections.List<com.yossibank.shared.PokemonBaseStat>){}[0]
         final fun equals(kotlin/Any?): kotlin/Boolean // com.yossibank.shared/PokemonEntryDetail.Loaded.equals|equals(kotlin.Any?){}[0]
         final fun hashCode(): kotlin/Int // com.yossibank.shared/PokemonEntryDetail.Loaded.hashCode|hashCode(){}[0]
         final fun toString(): kotlin/String // com.yossibank.shared/PokemonEntryDetail.Loaded.toString|toString(){}[0]
