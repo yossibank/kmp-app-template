@@ -1,4 +1,4 @@
-package com.yossibank.shared
+package com.yossibank.shared.pokemon
 
 import kotlin.test.assertIs
 import kotlin.test.assertNull

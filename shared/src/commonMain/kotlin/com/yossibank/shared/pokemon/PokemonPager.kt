@@ -1,108 +1,57 @@
-package com.yossibank.shared
+package com.yossibank.shared.pokemon
 
-import com.yossibank.shared.generated.model.PokemonSummary
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.sync.withPermit
+import com.yossibank.shared.core.ApiResult
+import com.yossibank.shared.core.OffsetPager
+import com.yossibank.shared.core.Page
+import com.yossibank.shared.core.PageResult
+import com.yossibank.shared.core.Revision
+import com.yossibank.shared.core.map
+import com.yossibank.shared.core.mapConcurrently
+import com.yossibank.shared.pokemon.generated.model.PokemonSummary
 
 class PokemonPager internal constructor(
     private val api: PokemonApi,
-    private val pageSize: Int,
+    pageSize: Int,
 ) {
     constructor() : this(PokemonApi(), PokemonApi.PAGE_SIZE)
 
-    private val loadMutex = Mutex()
-    private val stateMutex = Mutex()
-    private val loaded = mutableListOf<PokemonEntry>()
-    private var nextOffset = 0
-    private var total = 0
-    private var exhausted = false
-    private var generation = 0
-
-    suspend fun loadNext(): PokemonListResult = loadMutex.withLock {
-        val start = stateMutex.withLock { Snapshot(nextOffset, exhausted, generation) }
-
-        if (start.exhausted) {
-            return@withLock stateMutex.withLock { result(failure = null) }
-        }
-
-        when (val page = api.fetchPage(limit = pageSize, offset = start.offset)) {
-            is FetchOutcome.Ok -> {
-                val entries = enrich(page.value.pokemon)
-
-                commit(start.generation) {
-                    loaded += entries
-                    nextOffset += page.value.pokemon.size
-                    total = page.value.total
-                    exhausted = !page.value.hasMore || page.value.pokemon.isEmpty()
-                    result(failure = null)
-                }
-            }
-
-            is FetchOutcome.Err -> commit(start.generation) { result(failure = page.reason) }
-        }
-    }
-
-    suspend fun retryMissingDetails(): PokemonListResult = loadMutex.withLock {
-        val (startGeneration, targets) = stateMutex.withLock {
-            generation to loaded.filter { it.detail is PokemonEntryDetail.Missing }
-        }
-
-        if (targets.isEmpty()) {
-            return@withLock stateMutex.withLock { result(failure = null) }
-        }
-
-        val repaired = repair(targets)
-        val unresolved = repaired.mapNotNull { it.detail as? PokemonEntryDetail.Missing }
-
-        commit(startGeneration) {
-            repaired.forEach { entry ->
-                val index = loaded.indexOfFirst { it.id == entry.id }
-
-                if (index >= 0) {
-                    loaded[index] = entry
-                }
-            }
-
-            result(
-                failure = if (unresolved.size == targets.size) unresolved.first().failure else null,
+    private val pager = OffsetPager(pageSize) { offset, limit ->
+        api.fetchPage(limit = limit, offset = offset).map { page ->
+            Page(
+                items = entriesOf(page.pokemon),
+                consumed = page.pokemon.size,
+                hasMore = page.hasMore,
+                total = page.total,
             )
         }
     }
 
-    suspend fun reset() = stateMutex.withLock {
-        loaded.clear()
-        nextOffset = 0
-        total = 0
-        exhausted = false
-        generation += 1
-    }
+    suspend fun loadNext(): PokemonListResult = pager.loadNext().toListResult()
+
+    suspend fun retryMissingDetails(): PokemonListResult = pager
+        .revise { entries ->
+            val targets = entries.filter { it.detail is PokemonEntryDetail.Missing }
+
+            if (targets.isEmpty()) {
+                return@revise Revision(entries, failure = null)
+            }
+
+            val repaired = targets
+                .zip(detailsOf(targets.map { it.id })) { entry, detail -> entry.copy(detail = detail) }
+                .associateBy { it.id }
+            val unresolved = repaired.values.mapNotNull { it.detail as? PokemonEntryDetail.Missing }
+
+            Revision(
+                items = entries.map { repaired[it.id] ?: it },
+                failure = if (unresolved.size == targets.size) unresolved.first().failure else null,
+            )
+        }.toListResult()
+
+    suspend fun reset() = pager.reset()
 
     fun close() = api.close()
 
-    private fun result(failure: PokemonFailure?): PokemonListResult {
-        val pokemon = loaded.toList()
-        val hasMore = !exhausted
-
-        return if (failure != null && pokemon.isEmpty()) {
-            PokemonListResult.Failed(failure)
-        } else {
-            PokemonListResult.Loaded(pokemon, hasMore, total, failure)
-        }
-    }
-
-    private suspend fun commit(
-        startGeneration: Int,
-        write: () -> PokemonListResult,
-    ): PokemonListResult = stateMutex.withLock {
-        if (startGeneration != generation) PokemonListResult.Stale else write()
-    }
-
-    private suspend fun enrich(summaries: List<PokemonSummary>): List<PokemonEntry> {
+    private suspend fun entriesOf(summaries: List<PokemonSummary>): List<PokemonEntry> {
         val named = summaries.mapNotNull { summary -> PokemonEntry.idOf(summary)?.let { it to summary.name } }
 
         return named.zip(detailsOf(named.map { it.first })) { (id, name), detail ->
@@ -110,34 +59,20 @@ class PokemonPager internal constructor(
         }
     }
 
-    private suspend fun repair(targets: List<PokemonEntry>): List<PokemonEntry> =
-        targets.zip(detailsOf(targets.map { it.id })) { entry, detail -> entry.copy(detail = detail) }
-
-    private suspend fun detailsOf(ids: List<Int>): List<PokemonEntryDetail> = coroutineScope {
-        val gate = Semaphore(DETAIL_CONCURRENCY)
-
-        ids
-            .map { id ->
-                async {
-                    gate.withPermit {
-                        when (val detail = api.fetchDetail(id)) {
-                            is FetchOutcome.Ok -> PokemonEntry.detailOf(detail.value)
-                            is FetchOutcome.Err -> PokemonEntryDetail.Missing(detail.reason)
-                        }
-                    }
-                }
-            }.awaitAll()
+    private suspend fun detailsOf(ids: List<Int>): List<PokemonEntryDetail> = ids.mapConcurrently(DETAIL_CONCURRENCY) { id ->
+        when (val detail = api.fetchDetail(id)) {
+            is ApiResult.Ok -> PokemonEntry.detailOf(detail.value)
+            is ApiResult.Err -> PokemonEntryDetail.Missing(detail.failure)
+        }
     }
 
-    private data class Snapshot(
-        val offset: Int,
-        val exhausted: Boolean,
-        val generation: Int,
-    )
-
-    companion object {
-        const val PREFETCH_DISTANCE: Int = 8
-
-        internal const val DETAIL_CONCURRENCY: Int = 6
+    internal companion object {
+        const val DETAIL_CONCURRENCY: Int = 6
     }
+}
+
+private fun PageResult<PokemonEntry>.toListResult(): PokemonListResult = when (this) {
+    is PageResult.Loaded -> PokemonListResult.Loaded(items, hasMore, total, failure)
+    is PageResult.Failed -> PokemonListResult.Failed(failure)
+    PageResult.Stale -> PokemonListResult.Stale
 }

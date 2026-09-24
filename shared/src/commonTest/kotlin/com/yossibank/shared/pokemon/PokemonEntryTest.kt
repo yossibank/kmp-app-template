@@ -1,7 +1,7 @@
-package com.yossibank.shared
+package com.yossibank.shared.pokemon
 
-import com.yossibank.shared.generated.model.PokemonDetail
-import com.yossibank.shared.generated.model.PokemonSummary
+import com.yossibank.shared.pokemon.generated.model.PokemonDetail
+import com.yossibank.shared.pokemon.generated.model.PokemonSummary
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
