@@ -30,6 +30,14 @@ if [ -n "$(git status --porcelain)" ]; then
     exit 1
 fi
 
+BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+if [ "$BRANCH" != "main" ]; then
+    echo "main 以外からはリリースしません: ${BRANCH}" >&2
+    exit 1
+fi
+
+make verify
+
 export GITHUB_ACTOR="${GITHUB_ACTOR:-$(gh api user --jq .login)}"
 export GITHUB_TOKEN="${GITHUB_TOKEN:-$(gh auth token)}"
 
