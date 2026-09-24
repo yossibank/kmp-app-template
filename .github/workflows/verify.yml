@@ -32,13 +32,6 @@ jobs:
       - name: Show Xcode version
         run: xcodebuild -version
 
-      - name: Start booting the simulator
-        run: |
-          SIMULATOR=$(xcrun simctl list devices available \
-            | awk -F'[()]' '/^ *iPhone/ {gsub(/^ +| +$/,"",$1); print $1; exit}')
-          echo "SIMULATOR=${SIMULATOR}" >> "$GITHUB_ENV"
-          xcrun simctl boot "$SIMULATOR" || true
-
       - name: Set up JDK
         uses: actions/setup-java@v6
         with:
@@ -58,61 +51,3 @@ jobs:
 
       - name: Verify
         run: make verify
-
-      - name: Pick the consumer branches to build against
-        env:
-          HEAD_REF: ${{ github.head_ref }}
-        run: |
-          resolve() {
-            ref=main
-
-            if [ -n "$HEAD_REF" ] && git ls-remote --exit-code --heads \
-                 "https://github.com/yossibank/$1" "$HEAD_REF" >/dev/null 2>&1; then
-              ref="$HEAD_REF"
-            fi
-
-            echo "$2=$ref" >> "$GITHUB_ENV"
-            echo "$1 -> $ref"
-          }
-
-          resolve android-app-template ANDROID_REF
-          resolve ios-app-template IOS_REF
-
-      - name: Check out the Android app
-        uses: actions/checkout@v7
-        with:
-          repository: yossibank/android-app-template
-          ref: ${{ env.ANDROID_REF }}
-          path: consumer-android
-          token: ${{ secrets.SHARED_CORE_TOKEN || secrets.GITHUB_TOKEN }}
-
-      - name: Point the Android app at mavenLocal
-        run: python3 .github/scripts/point-android-at-local-core.py consumer-android
-
-      - name: Publish the shared library to mavenLocal
-        run: |
-          ./gradlew \
-            :shared:publishKotlinMultiplatformPublicationToMavenLocal \
-            :shared:publishAndroidPublicationToMavenLocal
-
-      - name: Build the Android app against the shared library
-        working-directory: consumer-android
-        run: ./gradlew assembleDebug testDebugUnitTest
-
-      - name: Check out the iOS app
-        uses: actions/checkout@v7
-        with:
-          repository: yossibank/ios-app-template
-          ref: ${{ env.IOS_REF }}
-          path: consumer-ios
-          token: ${{ secrets.SHARED_CORE_TOKEN || secrets.GITHUB_TOKEN }}
-
-      - name: Point the iOS app at the locally built XCFramework
-        run: python3 .github/scripts/point-ios-at-local-core.py consumer-ios
-
-      - name: Wait for the simulator
-        run: xcrun simctl bootstatus "$SIMULATOR" -b
-
-      - name: Test the iOS app against the shared library
-        working-directory: consumer-ios
-        run: make test build SIMULATOR="$SIMULATOR"

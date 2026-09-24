@@ -67,16 +67,16 @@ Package.swift               # iOS から SPM で参照するための宣言
 ## リリース
 
 GitHub Actions の **Release** ワークフローを実行し、バージョンを semver で渡す。
-XCFramework のビルド、GitHub Packages への publish、リリース作成、`Package.swift` の生成、
-コミットとタグまでを 1 回で行う。手元の Xcode 設定に左右されない。
+XCFramework のビルド、GitHub Packages への publish、リリース作成、`Package.swift` の url と
+checksum の更新、コミットとタグまでを 1 回で行う。手元の Xcode 設定に左右されない。
 
 同じ手順を手元で実行する `release.sh` も残してある。引数は同じ。
 
 リリース後に消費側 2 リポジトリのバージョン指定を更新し、その PR を開く。publish される前に
 PR を開くと、pin を解決できずに落ちる。
 
-3 リポジトリに跨る変更では、3 つとも同じブランチ名にする。kmp の verify が消費側の同名
-ブランチをビルドするので、release を待たずに 3 リポジトリ分の整合を確認できる。
+kmp の verify は消費側をビルドしない。公開 API が変わったかは `shared/api/` の差分で分かり、
+消費側がそれで通るかは、リリース後に pin を上げた消費側の PR の CI で確かめる。
 
 ## 環境
 
