@@ -63,6 +63,7 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "Shared"
             isStatic = true
+            binaryOption("bundleId", "com.yossibank.shared")
             xcframework.add(this)
         }
     }

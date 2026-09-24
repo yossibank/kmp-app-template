@@ -1,11 +1,32 @@
 package com.yossibank.shared
 
+import com.yossibank.shared.generated.model.PokemonDetail
 import com.yossibank.shared.generated.model.PokemonSummary
+import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class PokemonEntryTest {
+    private val json = Json { ignoreUnknownKeys = true }
+
+    private fun loadedFrom(detail: String) = PokemonEntry.detailOf(json.decodeFromString<PokemonDetail>(detail))
+
+    @Test
+    fun the_image_is_the_artwork_when_there_is_one() {
+        assertEquals("https://img.test/artwork/1.png", loadedFrom(detailJson(1)).imageUrl)
+    }
+
+    @Test
+    fun the_image_falls_back_to_the_sprite_without_artwork() {
+        assertEquals("https://img.test/1.png", loadedFrom(detailJson(1, artwork = null)).imageUrl)
+    }
+
+    @Test
+    fun there_is_no_image_when_neither_exists() {
+        assertNull(loadedFrom(detailJson(1, sprite = null, artwork = null)).imageUrl)
+    }
+
     @Test
     fun the_id_comes_from_the_url_of_the_summary() {
         assertEquals(

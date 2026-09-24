@@ -88,10 +88,10 @@ class PokemonPager internal constructor(
         val pokemon = loaded.toList()
         val hasMore = !exhausted
 
-        return when {
-            failure == null -> PokemonListResult.Loaded(pokemon, hasMore, total)
-            pokemon.isEmpty() -> PokemonListResult.Failed(failure)
-            else -> PokemonListResult.Degraded(pokemon, hasMore, total, failure)
+        return if (failure != null && pokemon.isEmpty()) {
+            PokemonListResult.Failed(failure)
+        } else {
+            PokemonListResult.Loaded(pokemon, hasMore, total, failure)
         }
     }
 

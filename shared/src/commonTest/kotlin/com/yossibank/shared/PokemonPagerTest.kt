@@ -93,11 +93,11 @@ class PokemonPagerTest {
     fun loadNext_accumulates_across_pages() = runTest {
         val pager = PageServer(total = 5).pager(pageSize = 2)
 
-        val first = assertIs<PokemonListResult.Loaded>(pager.loadNext())
+        val first = assertLoaded(pager.loadNext())
         assertEquals(listOf("p0", "p1"), first.pokemon.map { it.name })
         assertTrue(first.hasMore)
 
-        val second = assertIs<PokemonListResult.Loaded>(pager.loadNext())
+        val second = assertLoaded(pager.loadNext())
         assertEquals(listOf("p0", "p1", "p2", "p3"), second.pokemon.map { it.name })
         assertTrue(second.hasMore)
     }
@@ -106,7 +106,7 @@ class PokemonPagerTest {
     fun loadNext_fills_each_row_from_the_detail_endpoint() = runTest {
         val pager = PageServer(total = 1).pager(pageSize = 1)
 
-        val loaded = assertIs<PokemonListResult.Loaded>(pager.loadNext())
+        val loaded = assertLoaded(pager.loadNext())
         val entry = loaded.pokemon.single()
 
         assertEquals(0, entry.id)
@@ -114,8 +114,7 @@ class PokemonPagerTest {
         assertEquals("p0", entry.name)
 
         val detail = assertIs<PokemonEntryDetail.Loaded>(entry.detail)
-        assertEquals("https://img.test/0.png", detail.spriteUrl)
-        assertEquals("https://img.test/artwork/0.png", detail.artworkUrl, "大きく出せる画像を捨てている")
+        assertEquals("https://img.test/artwork/0.png", detail.imageUrl, "大きく出せる画像を捨てている")
         assertEquals(listOf(PokemonTypeKind.GRASS, PokemonTypeKind.POISON), detail.types)
         assertEquals(
             listOf(
@@ -131,7 +130,7 @@ class PokemonPagerTest {
     fun a_row_whose_detail_fails_still_appears_with_its_name() = runTest {
         val pager = PageServer(total = 2, detailFailsFor = setOf(1)).pager(pageSize = 2)
 
-        val loaded = assertIs<PokemonListResult.Loaded>(pager.loadNext())
+        val loaded = assertLoaded(pager.loadNext())
 
         assertEquals(listOf("p0", "p1"), loaded.pokemon.map { it.name }, "詳細の失敗で行が消えている")
         assertEquals(1, loaded.incompleteCount, "詳細を取れなかった行が数に出ていない")
@@ -145,7 +144,7 @@ class PokemonPagerTest {
     fun a_row_says_why_its_detail_is_missing() = runTest {
         val pager = PageServer(total = 2, detailFailsFor = setOf(1)).pager(pageSize = 2)
 
-        val loaded = assertIs<PokemonListResult.Loaded>(pager.loadNext())
+        val loaded = assertLoaded(pager.loadNext())
         val missing = assertIs<PokemonEntryDetail.Missing>(loaded.pokemon.single { it.id == 1 }.detail)
 
         assertEquals(PokemonFailure.Server(500), missing.failure, "詳細の失敗理由が消えている")
@@ -185,7 +184,7 @@ class PokemonPagerTest {
         val pager = server.pager(pageSize = 2)
 
         pager.loadNext()
-        val last = assertIs<PokemonListResult.Loaded>(pager.loadNext())
+        val last = assertLoaded(pager.loadNext())
         assertEquals(listOf("p0", "p1", "p2"), last.pokemon.map { it.name })
         assertFalse(last.hasMore)
 
@@ -201,7 +200,7 @@ class PokemonPagerTest {
 
         var names = emptyList<String>()
         repeat(3) {
-            names = assertIs<PokemonListResult.Loaded>(pager.loadNext()).pokemon.map { it.name }
+            names = assertLoaded(pager.loadNext()).pokemon.map { it.name }
         }
 
         assertEquals(listOf(0, 2, 4), server.pageOffsets, "id を取れない行の分だけ次ページの窓がずれている")
@@ -217,7 +216,7 @@ class PokemonPagerTest {
         pager.loadNext()
         pager.reset()
 
-        val afterReset = assertIs<PokemonListResult.Loaded>(pager.loadNext())
+        val afterReset = assertLoaded(pager.loadNext())
         assertEquals(listOf("p0", "p1"), afterReset.pokemon.map { it.name })
     }
 
@@ -225,10 +224,10 @@ class PokemonPagerTest {
     fun a_failed_page_keeps_what_was_already_loaded() = runTest {
         val pager = PageServer(total = 6, failFrom = 2).pager(pageSize = 2)
 
-        val ok = assertIs<PokemonListResult.Loaded>(pager.loadNext())
+        val ok = assertLoaded(pager.loadNext())
         assertEquals(listOf("p0", "p1"), ok.pokemon.map { it.name })
 
-        val degraded = assertIs<PokemonListResult.Degraded>(
+        val degraded = assertIs<PokemonListResult.Loaded>(
             pager.loadNext(),
             "見せる行が残っているのに全滅扱いになっている",
         )
@@ -244,7 +243,7 @@ class PokemonPagerTest {
     fun the_result_says_how_many_there_are_in_all() = runTest {
         val pager = PageServer(total = 57).pager(pageSize = 2)
 
-        val loaded = assertIs<PokemonListResult.Loaded>(pager.loadNext())
+        val loaded = assertLoaded(pager.loadNext())
 
         assertEquals(57, loaded.total, "応答が持っている全体件数を捨てている")
         assertEquals(2, loaded.pokemon.size)
@@ -266,7 +265,7 @@ class PokemonPagerTest {
         val server = PageServer(total = 0, alwaysMore = true)
         val pager = server.pager(pageSize = 2)
 
-        val first = assertIs<PokemonListResult.Loaded>(pager.loadNext())
+        val first = assertLoaded(pager.loadNext())
         assertFalse(first.hasMore, "0 件のページを受け取ったのに続きがあると言っている")
 
         pager.loadNext()
@@ -284,7 +283,7 @@ class PokemonPagerTest {
         ).awaitAll()
 
         assertEquals(2, server.pageOffsets.size, "重ねて呼んでも 1 ページずつしか取らない")
-        val names = results.map { assertIs<PokemonListResult.Loaded>(it).pokemon.map { p -> p.name } }
+        val names = results.map { assertLoaded(it).pokemon.map { p -> p.name } }
         assertEquals(listOf("p0", "p1"), names[0])
         assertEquals(listOf("p0", "p1", "p2", "p3"), names[1])
     }
