@@ -16,7 +16,7 @@ iOS と Android で共有するロジックを Kotlin Multiplatform で書いた
 
 </div>
 
-PokeAPI からのポケモン一覧の取得、ページング、エラーの分類までを担います。この共通コアから、iOS と Android の 2 つのアプリができています。
+PokeAPI からの一覧取得・ページング・エラーの分類を担います。
 
 <table>
   <tr>
