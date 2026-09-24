@@ -1,5 +1,6 @@
-package com.yossibank.shared
+package com.yossibank.shared.pokemon
 
+import com.yossibank.shared.core.ApiFailure
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.http.ContentType
@@ -108,7 +109,7 @@ class PokemonPagerRetryTest {
             "何も直らなかったのに成功として返っている",
         )
 
-        assertEquals(PokemonFailure.Server(500), degraded.failure)
+        assertEquals(ApiFailure.Server(500), degraded.failure)
         assertEquals(listOf("p0", "p1", "p2"), degraded.pokemon.map { it.name }, "再試行の失敗で行が消えている")
         assertEquals(1, degraded.incompleteCount)
         assertTrue(assertNotNull(degraded.failure).canRetry)

@@ -1,27 +1,27 @@
-package com.yossibank.shared
+package com.yossibank.shared.core
 
-sealed interface PokemonFailure {
+sealed interface ApiFailure {
     val canRetry: Boolean
 
-    data object Offline : PokemonFailure {
+    data object Offline : ApiFailure {
         override val canRetry = true
     }
 
-    data object Timeout : PokemonFailure {
+    data object Timeout : ApiFailure {
         override val canRetry = true
     }
 
     data class Server(
         val statusCode: Int,
-    ) : PokemonFailure {
+    ) : ApiFailure {
         override val canRetry = statusCode == 429 || statusCode >= 500
     }
 
-    data object Unexpected : PokemonFailure {
+    data object Unreadable : ApiFailure {
         override val canRetry = false
     }
 
-    data object Closed : PokemonFailure {
+    data object Closed : ApiFailure {
         override val canRetry = false
     }
 }

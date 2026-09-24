@@ -1,7 +1,8 @@
-package com.yossibank.shared
+package com.yossibank.shared.pokemon
 
-import com.yossibank.shared.generated.model.PokemonDetail
-import com.yossibank.shared.generated.model.PokemonSummary
+import com.yossibank.shared.core.ApiFailure
+import com.yossibank.shared.pokemon.generated.model.PokemonDetail
+import com.yossibank.shared.pokemon.generated.model.PokemonSummary
 
 enum class PokemonTypeKind {
     NORMAL,
@@ -88,7 +89,7 @@ sealed interface PokemonEntryDetail {
     }
 
     data class Missing(
-        val failure: PokemonFailure,
+        val failure: ApiFailure,
     ) : PokemonEntryDetail
 }
 
