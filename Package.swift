@@ -9,8 +9,8 @@ let package = Package(
     targets: [
         .binaryTarget(
             name: "Shared",
-            url: "https://api.github.com/repos/yossibank/kmp-app-template/releases/assets/583799940.zip",
-            checksum: "1a2ad23514ad54cba31eafdeb8069913082a679c2b0e80472831643e9c0844a6"
+            url: "https://api.github.com/repos/yossibank/kmp-app-template/releases/assets/585296803.zip",
+            checksum: "f614581792861fc190ef58e963cb1eb873cb60f7ea047318be1caf63d258f42c"
         )
     ]
 )
