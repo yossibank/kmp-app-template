@@ -5,15 +5,7 @@ sealed interface PokemonListResult {
         val pokemon: List<PokemonEntry>,
         val hasMore: Boolean,
         val total: Int,
-    ) : PokemonListResult {
-        val incompleteCount: Int get() = pokemon.count { it.detail is PokemonEntryDetail.Missing }
-    }
-
-    data class Degraded(
-        val pokemon: List<PokemonEntry>,
-        val hasMore: Boolean,
-        val total: Int,
-        val failure: PokemonFailure,
+        val failure: PokemonFailure? = null,
     ) : PokemonListResult {
         val incompleteCount: Int get() = pokemon.count { it.detail is PokemonEntryDetail.Missing }
     }
