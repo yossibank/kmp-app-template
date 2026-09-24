@@ -22,7 +22,7 @@ build-android:
 	./gradlew :shared:assembleAndroidMain $(GRADLE_FLAGS)
 
 build-ios:
-	./gradlew :shared:assembleSharedXCFramework $(GRADLE_FLAGS)
+	./gradlew :shared:assembleSharedReleaseXCFramework $(GRADLE_FLAGS)
 
 publish-local:
 	./gradlew :shared:publishToMavenLocal

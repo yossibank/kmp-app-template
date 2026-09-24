@@ -1,5 +1,8 @@
 package com.yossibank.shared
 
+import kotlin.test.assertIs
+import kotlin.test.assertNull
+
 internal const val TEST_BASE_URL = "https://example.test"
 
 internal fun detailJson(
@@ -79,4 +82,11 @@ internal fun pageJson(
     }
     val nextValue = next?.let { "\"$it\"" } ?: "null"
     return """{"count":$count,"next":$nextValue,"previous":null,"results":[$results]}"""
+}
+
+internal fun assertLoaded(
+    result: PokemonListResult,
+    message: String? = null,
+): PokemonListResult.Loaded = assertIs<PokemonListResult.Loaded>(result, message).also {
+    assertNull(it.failure, message ?: "失敗を連れた結果になっている")
 }

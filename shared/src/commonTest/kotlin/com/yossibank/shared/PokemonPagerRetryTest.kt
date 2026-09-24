@@ -11,6 +11,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 private class HealingServer(
@@ -69,10 +70,10 @@ class PokemonPagerRetryTest {
     fun a_row_that_failed_can_be_filled_without_reloading_the_list() = runTest {
         val pager = HealingServer(total = 3, failingIds = setOf(1)).pager(pageSize = 3)
 
-        val before = assertIs<PokemonListResult.Loaded>(pager.loadNext())
+        val before = assertLoaded(pager.loadNext())
         assertEquals(1, before.incompleteCount)
 
-        val after = assertIs<PokemonListResult.Loaded>(pager.retryMissingDetails())
+        val after = assertLoaded(pager.retryMissingDetails())
 
         assertEquals(0, after.incompleteCount, "再試行しても詳細が埋まっていない")
         assertEquals(listOf("p0", "p1", "p2"), after.pokemon.map { it.name }, "再試行で並び順が変わっている")
@@ -102,7 +103,7 @@ class PokemonPagerRetryTest {
 
         pager.loadNext()
 
-        val degraded = assertIs<PokemonListResult.Degraded>(
+        val degraded = assertIs<PokemonListResult.Loaded>(
             pager.retryMissingDetails(),
             "何も直らなかったのに成功として返っている",
         )
@@ -110,7 +111,7 @@ class PokemonPagerRetryTest {
         assertEquals(PokemonFailure.Server(500), degraded.failure)
         assertEquals(listOf("p0", "p1", "p2"), degraded.pokemon.map { it.name }, "再試行の失敗で行が消えている")
         assertEquals(1, degraded.incompleteCount)
-        assertTrue(degraded.failure.canRetry)
+        assertTrue(assertNotNull(degraded.failure).canRetry)
     }
 
     @Test
@@ -121,7 +122,7 @@ class PokemonPagerRetryTest {
         pager.loadNext()
         val afterFirstPage = server.detailRequests
 
-        val result = assertIs<PokemonListResult.Loaded>(pager.retryMissingDetails())
+        val result = assertLoaded(pager.retryMissingDetails())
 
         assertEquals(afterFirstPage, server.detailRequests, "埋める対象が無いのに問い合わせている")
         assertEquals(0, result.incompleteCount)
