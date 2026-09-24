@@ -34,33 +34,22 @@ class PokemonPager internal constructor(
             is FetchOutcome.Ok -> {
                 val entries = enrich(page.value.pokemon)
 
-                stateMutex.withLock {
-                    if (start.generation != generation) {
-                        PokemonListResult.Stale
-                    } else {
-                        loaded += entries
-                        nextOffset += page.value.pokemon.size
-                        total = page.value.total
-                        exhausted = !page.value.hasMore || page.value.pokemon.isEmpty()
-                        result(failure = null)
-                    }
+                commit(start.generation) {
+                    loaded += entries
+                    nextOffset += page.value.pokemon.size
+                    total = page.value.total
+                    exhausted = !page.value.hasMore || page.value.pokemon.isEmpty()
+                    result(failure = null)
                 }
             }
 
-            is FetchOutcome.Err -> stateMutex.withLock {
-                if (start.generation != generation) {
-                    PokemonListResult.Stale
-                } else {
-                    result(failure = page.reason)
-                }
-            }
+            is FetchOutcome.Err -> commit(start.generation) { result(failure = page.reason) }
         }
     }
 
     suspend fun retryMissingDetails(): PokemonListResult = loadMutex.withLock {
-        val start = stateMutex.withLock { Snapshot(nextOffset, exhausted, generation) }
-        val targets = stateMutex.withLock {
-            loaded.filter { it.detail is PokemonEntryDetail.Missing }
+        val (startGeneration, targets) = stateMutex.withLock {
+            generation to loaded.filter { it.detail is PokemonEntryDetail.Missing }
         }
 
         if (targets.isEmpty()) {
@@ -70,22 +59,18 @@ class PokemonPager internal constructor(
         val repaired = repair(targets)
         val unresolved = repaired.mapNotNull { it.detail as? PokemonEntryDetail.Missing }
 
-        stateMutex.withLock {
-            if (start.generation != generation) {
-                PokemonListResult.Stale
-            } else {
-                repaired.forEach { entry ->
-                    val index = loaded.indexOfFirst { it.id == entry.id }
+        commit(startGeneration) {
+            repaired.forEach { entry ->
+                val index = loaded.indexOfFirst { it.id == entry.id }
 
-                    if (index >= 0) {
-                        loaded[index] = entry
-                    }
+                if (index >= 0) {
+                    loaded[index] = entry
                 }
-
-                result(
-                    failure = if (unresolved.size == targets.size) unresolved.first().failure else null,
-                )
             }
+
+            result(
+                failure = if (unresolved.size == targets.size) unresolved.first().failure else null,
+            )
         }
     }
 
@@ -110,35 +95,34 @@ class PokemonPager internal constructor(
         }
     }
 
-    private suspend fun enrich(summaries: List<PokemonSummary>): List<PokemonEntry> = coroutineScope {
-        val gate = Semaphore(DETAIL_CONCURRENCY)
-
-        summaries
-            .map { summary ->
-                async {
-                    val id = PokemonEntry.idOf(summary) ?: return@async null
-
-                    gate.withPermit {
-                        when (val detail = api.fetchDetail(id)) {
-                            is FetchOutcome.Ok -> PokemonEntry.from(id, summary, detail.value)
-                            is FetchOutcome.Err -> PokemonEntry.nameOnly(id, summary, detail.reason)
-                        }
-                    }
-                }
-            }.awaitAll()
-            .filterNotNull()
+    private suspend fun commit(
+        startGeneration: Int,
+        write: () -> PokemonListResult,
+    ): PokemonListResult = stateMutex.withLock {
+        if (startGeneration != generation) PokemonListResult.Stale else write()
     }
 
-    private suspend fun repair(targets: List<PokemonEntry>): List<PokemonEntry> = coroutineScope {
+    private suspend fun enrich(summaries: List<PokemonSummary>): List<PokemonEntry> {
+        val named = summaries.mapNotNull { summary -> PokemonEntry.idOf(summary)?.let { it to summary.name } }
+
+        return named.zip(detailsOf(named.map { it.first })) { (id, name), detail ->
+            PokemonEntry(id = id, name = name, detail = detail)
+        }
+    }
+
+    private suspend fun repair(targets: List<PokemonEntry>): List<PokemonEntry> =
+        targets.zip(detailsOf(targets.map { it.id })) { entry, detail -> entry.copy(detail = detail) }
+
+    private suspend fun detailsOf(ids: List<Int>): List<PokemonEntryDetail> = coroutineScope {
         val gate = Semaphore(DETAIL_CONCURRENCY)
 
-        targets
-            .map { entry ->
+        ids
+            .map { id ->
                 async {
                     gate.withPermit {
-                        when (val detail = api.fetchDetail(entry.id)) {
-                            is FetchOutcome.Ok -> entry.copy(detail = PokemonEntry.detailOf(detail.value))
-                            is FetchOutcome.Err -> entry.copy(detail = PokemonEntryDetail.Missing(detail.reason))
+                        when (val detail = api.fetchDetail(id)) {
+                            is FetchOutcome.Ok -> PokemonEntry.detailOf(detail.value)
+                            is FetchOutcome.Err -> PokemonEntryDetail.Missing(detail.reason)
                         }
                     }
                 }
