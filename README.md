@@ -16,7 +16,7 @@ iOS と Android で共有するロジックを Kotlin Multiplatform で書いた
 
 </div>
 
-PokeAPI からのポケモン一覧の取得、ページング、エラーの分類までを担います。この共通コアから、iOS と Android の 2 つのアプリができています。
+PokeAPI からの一覧取得・ページング・エラーの分類を担います。
 
 <table>
   <tr>
@@ -62,7 +62,11 @@ flowchart LR
 <details>
 <summary>リリース</summary>
 
-GitHub Actions の **Release** ワークフローにバージョン（semver）を渡して実行します（手元では `./release.sh <version>`）。XCFramework のビルド、GitHub Packages への publish、`Package.swift` の更新、タグ付けまでを行います。
+GitHub Actions の **Release** ワークフローにバージョン（semver）を渡して実行します（手元では `./release.sh <version>`）。
+
+1. XCFramework をビルドする
+2. `Package.swift` を更新してタグを付ける
+3. GitHub Packages へ publish する
 
 リリース後に、アプリ側 2 リポジトリのバージョン指定を上げます。
 
