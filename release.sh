@@ -90,24 +90,12 @@ done
 
 ASSET_URL="${ASSET_URL}.zip"
 
-cat > Package.swift <<EOF
-// swift-tools-version: 6.0
-import PackageDescription
-
-let package = Package(
-    name: "${FRAMEWORK}",
-    products: [
-        .library(name: "${FRAMEWORK}", targets: ["${FRAMEWORK}"])
-    ],
-    targets: [
-        .binaryTarget(
-            name: "${FRAMEWORK}",
-            url: "${ASSET_URL}",
-            checksum: "${CHECKSUM}"
-        )
-    ]
-)
-EOF
+sed -i '' -E \
+    -e "s|^( *url: )\".*\",$|\\1\"${ASSET_URL}\",|" \
+    -e "s|^( *checksum: )\".*\"$|\\1\"${CHECKSUM}\"|" \
+    Package.swift
+grep -qF "url: \"${ASSET_URL}\"," Package.swift && grep -qF "checksum: \"${CHECKSUM}\"" Package.swift ||
+    { echo "Package.swift の url / checksum を書き換えられませんでした" >&2; false; }
 
 STAGE="committed"
 git add Package.swift "$BUILD_FILE"
