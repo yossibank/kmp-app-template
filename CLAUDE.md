@@ -1,10 +1,18 @@
 # kmp-app-template
 
-- コメントを書かない。コード、設定、スクリプト、CI のいずれにも書かない。要ると判断したら、書かずに提案する。
+## 作業の進め方
+
 - 変更したら `make verify` を通す。
-- iOS に公開する型は data class / sealed interface / enum のみ。`Flow` は公開しない（SKIE が変換せず、
-  Swift 側で気づかないまま壊れる）。例外は投げず sealed な型で返す。
-- 公開 API を壊すときは、消費側 2 リポジトリを同じ作業時間に更新する。`@Deprecated` を挟んで猶予を作らない。
-- 消費側の PR は release の後に開く。publish されていないバージョンを pin すると解決できずに落ちる。
 - バージョンを `gradle/libs.versions.toml` 以外で指定しない。
 - `.gitignore` に `*.jar` を追加しない（`gradle-wrapper.jar` が消える）。
+
+## コードの書き方
+
+- コメントを書かない。コード、設定、スクリプト、CI のいずれにも書かない。要ると判断したら、書かずに提案する。
+- iOS に公開する型は data class / sealed interface / enum のみ。`Flow` は公開しない（SKIE が変換せず、
+  Swift 側で気づかないまま壊れる）。例外は投げず sealed な型で返す。
+
+## 3 リポジトリの取り決め
+
+- 公開 API を壊すときは、消費側 2 リポジトリを同じ作業時間に更新する。`@Deprecated` を挟んで猶予を作らない。
+- 消費側の PR は release の後に開く。publish されていないバージョンを pin すると解決できずに落ちる。
