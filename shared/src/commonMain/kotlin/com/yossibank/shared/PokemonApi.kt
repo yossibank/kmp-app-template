@@ -84,13 +84,7 @@ internal class PokemonApi(
         val response = try {
             client.get(url) { configure() }
         } catch (e: CancellationException) {
-            currentCoroutineContext().ensureActive()
-
-            if (closed) {
-                return FetchOutcome.Err(PokemonFailure.Closed)
-            }
-
-            throw e
+            return closedOrRethrow(e)
         } catch (e: Exception) {
             return FetchOutcome.Err(if (e.isTimeout()) PokemonFailure.Timeout else PokemonFailure.Offline)
         }
@@ -102,16 +96,20 @@ internal class PokemonApi(
         return try {
             FetchOutcome.Ok(response.body<T>())
         } catch (e: CancellationException) {
-            currentCoroutineContext().ensureActive()
-
-            if (closed) {
-                return FetchOutcome.Err(PokemonFailure.Closed)
-            }
-
-            throw e
+            closedOrRethrow(e)
         } catch (e: Exception) {
             FetchOutcome.Err(PokemonFailure.Unexpected)
         }
+    }
+
+    private suspend fun closedOrRethrow(e: CancellationException): FetchOutcome.Err {
+        currentCoroutineContext().ensureActive()
+
+        if (closed) {
+            return FetchOutcome.Err(PokemonFailure.Closed)
+        }
+
+        throw e
     }
 
     companion object {

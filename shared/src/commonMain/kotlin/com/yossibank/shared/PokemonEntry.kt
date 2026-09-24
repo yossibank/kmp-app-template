@@ -104,26 +104,6 @@ data class PokemonEntry(
             .substringAfterLast('/')
             .toIntOrNull()
 
-        fun nameOnly(
-            id: Int,
-            summary: PokemonSummary,
-            failure: PokemonFailure,
-        ): PokemonEntry = PokemonEntry(
-            id = id,
-            name = summary.name,
-            detail = PokemonEntryDetail.Missing(failure),
-        )
-
-        fun from(
-            id: Int,
-            summary: PokemonSummary,
-            detail: PokemonDetail,
-        ): PokemonEntry = PokemonEntry(
-            id = id,
-            name = summary.name,
-            detail = detailOf(detail),
-        )
-
         fun detailOf(detail: PokemonDetail): PokemonEntryDetail.Loaded = PokemonEntryDetail.Loaded(
             spriteUrl = detail.sprites.frontDefault,
             artworkUrl = detail.sprites.other
