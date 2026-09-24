@@ -1,11 +1,8 @@
-import os, pathlib, re, sys
+import pathlib, re, sys
 
 CHECK_VERSION = "0.0.0-consumer-check"
 consumer = pathlib.Path(sys.argv[1])
 
-# 共通コアを、リモートに存在しないバージョンで publish させる。
-# これにより GitHub Packages から解決される可能性が無くなり、
-# 今ビルドした成果物を検証したことが保証される。
 build = pathlib.Path("shared/build.gradle.kts")
 s = build.read_text()
 s, n = re.subn(r'^version = ".*"$', f'version = "{CHECK_VERSION}"', s, flags=re.M)

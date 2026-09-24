@@ -1,4 +1,3 @@
-import os
 import pathlib
 import re
 import sys
@@ -6,9 +5,6 @@ import sys
 consumer = pathlib.Path(sys.argv[1]).resolve()
 core = pathlib.Path.cwd().resolve()
 
-# .package(path:) の識別子はディレクトリ名から決まる。ios 側は
-# .product(package: "kmp-app-template") と書いているため、名前が一致しないと
-# 解決に失敗する。CI の作業ディレクトリ名がリポジトリ名になることに依存している。
 assert core.name == "kmp-app-template", f"共通コアのディレクトリ名が想定と違う: {core.name}"
 
 xcframework = core / "shared/build/XCFrameworks/release/Shared.xcframework"
