@@ -1,123 +1,23 @@
 package com.yossibank.shared.pokemon
 
-import com.yossibank.shared.core.ApiFailure
-import com.yossibank.shared.pokemon.generated.model.PokemonDetail
 import com.yossibank.shared.pokemon.generated.model.PokemonSummary
-
-enum class PokemonTypeKind {
-    NORMAL,
-    FIRE,
-    WATER,
-    ELECTRIC,
-    GRASS,
-    ICE,
-    FIGHTING,
-    POISON,
-    GROUND,
-    FLYING,
-    PSYCHIC,
-    BUG,
-    ROCK,
-    GHOST,
-    DRAGON,
-    DARK,
-    STEEL,
-    FAIRY,
-    UNKNOWN,
-    ;
-
-    internal companion object {
-        fun from(raw: String): PokemonTypeKind = when (raw) {
-            "normal" -> NORMAL
-            "fire" -> FIRE
-            "water" -> WATER
-            "electric" -> ELECTRIC
-            "grass" -> GRASS
-            "ice" -> ICE
-            "fighting" -> FIGHTING
-            "poison" -> POISON
-            "ground" -> GROUND
-            "flying" -> FLYING
-            "psychic" -> PSYCHIC
-            "bug" -> BUG
-            "rock" -> ROCK
-            "ghost" -> GHOST
-            "dragon" -> DRAGON
-            "dark" -> DARK
-            "steel" -> STEEL
-            "fairy" -> FAIRY
-            else -> UNKNOWN
-        }
-    }
-}
-
-enum class PokemonStatKind {
-    HP,
-    ATTACK,
-    DEFENSE,
-    SPECIAL_ATTACK,
-    SPECIAL_DEFENSE,
-    SPEED,
-    OTHER,
-    ;
-
-    internal companion object {
-        fun from(raw: String): PokemonStatKind = when (raw) {
-            "hp" -> HP
-            "attack" -> ATTACK
-            "defense" -> DEFENSE
-            "special-attack" -> SPECIAL_ATTACK
-            "special-defense" -> SPECIAL_DEFENSE
-            "speed" -> SPEED
-            else -> OTHER
-        }
-    }
-}
-
-data class PokemonBaseStat(
-    val kind: PokemonStatKind,
-    val value: Int,
-)
-
-sealed interface PokemonEntryDetail {
-    data class Loaded(
-        val imageUrl: String?,
-        val types: List<PokemonTypeKind>,
-        val baseStats: List<PokemonBaseStat>,
-    ) : PokemonEntryDetail {
-        val totalBaseStat: Int = baseStats.sumOf { it.value }
-    }
-
-    data class Missing(
-        val failure: ApiFailure,
-    ) : PokemonEntryDetail
-}
 
 data class PokemonEntry(
     val id: Int,
     val name: String,
-    val detail: PokemonEntryDetail,
+    val imageUrl: String,
 ) {
     internal companion object {
+        private const val ARTWORK_BASE_URL =
+            "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork"
+
+        fun of(summary: PokemonSummary): PokemonEntry? = idOf(summary)?.let { id ->
+            PokemonEntry(id = id, name = summary.name, imageUrl = "$ARTWORK_BASE_URL/$id.png")
+        }
+
         fun idOf(summary: PokemonSummary): Int? = summary.url
             .trimEnd('/')
             .substringAfterLast('/')
             .toIntOrNull()
-
-        fun detailOf(detail: PokemonDetail): PokemonEntryDetail.Loaded = PokemonEntryDetail.Loaded(
-            imageUrl = detail.sprites.other
-                ?.officialArtwork
-                ?.frontDefault
-                ?: detail.sprites.frontDefault,
-            types = detail.types
-                .sortedBy { it.slot }
-                .map { PokemonTypeKind.from(it.type.name) },
-            baseStats = detail.stats.map {
-                PokemonBaseStat(
-                    kind = PokemonStatKind.from(it.stat.name),
-                    value = it.baseStat,
-                )
-            },
-        )
     }
 }

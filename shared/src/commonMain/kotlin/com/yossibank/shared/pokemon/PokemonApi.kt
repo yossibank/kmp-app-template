@@ -3,7 +3,6 @@ package com.yossibank.shared.pokemon
 import com.yossibank.shared.core.ApiClient
 import com.yossibank.shared.core.ApiResult
 import com.yossibank.shared.core.map
-import com.yossibank.shared.pokemon.generated.model.PokemonDetail
 import com.yossibank.shared.pokemon.generated.model.PokemonSummary
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.request.parameter
@@ -29,8 +28,6 @@ internal class PokemonApi(
             parameter("limit", limit)
             parameter("offset", offset)
         }.map { PokemonPage(pokemon = it.results, hasMore = it.next != null, total = it.count) }
-
-    suspend fun fetchDetail(id: Int): ApiResult<PokemonDetail> = client.get("/api/v2/pokemon/$id/")
 
     fun close() = client.close()
 
