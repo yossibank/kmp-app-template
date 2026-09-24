@@ -1,89 +1,69 @@
+<div align="center">
+
 # kmp-app-template
 
-> iOS / Android で共有するロジックの Kotlin Multiplatform ライブラリ。アプリ本体は含まない。
+iOS と Android で共有するロジックを Kotlin Multiplatform で書いたライブラリ
 
-書き方の規約は [CLAUDE.md](CLAUDE.md)。
+[![Verify](https://github.com/yossibank/kmp-app-template/actions/workflows/verify.yml/badge.svg)](https://github.com/yossibank/kmp-app-template/actions/workflows/verify.yml)
+[![Release](https://img.shields.io/github/v/release/yossibank/kmp-app-template)](https://github.com/yossibank/kmp-app-template/releases/latest)
+[![License](https://img.shields.io/github/license/yossibank/kmp-app-template)](LICENSE)
 
-## 3 リポジトリの関係
+![Kotlin Multiplatform](https://img.shields.io/badge/Kotlin_Multiplatform-7F52FF?logo=kotlin&logoColor=white)
+![Ktor](https://img.shields.io/badge/Ktor-087CFA?logo=ktor&logoColor=white)
+![kotlinx.serialization](https://img.shields.io/badge/kotlinx.serialization-7F52FF?logo=kotlin&logoColor=white)
+![SKIE](https://img.shields.io/badge/SKIE-555555)
+![OpenAPI](https://img.shields.io/badge/OpenAPI-6BA539?logo=openapiinitiative&logoColor=white)
+
+</div>
+
+PokeAPI からのポケモン一覧の取得、ページング、エラーの分類までを担います。この共通コアから、iOS と Android の 2 つのアプリができています。
+
+<table>
+  <tr>
+    <th>iOS（SwiftUI）</th>
+    <th>Android（Jetpack Compose）</th>
+  </tr>
+  <tr>
+    <td>
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="docs/images/ios-list-dark.png">
+        <img src="docs/images/ios-list-light.png" width="260" alt="iOS の一覧">
+      </picture>
+    </td>
+    <td>
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="docs/images/android-list-dark.png">
+        <img src="docs/images/android-list-light.png" width="260" alt="Android の一覧">
+      </picture>
+    </td>
+  </tr>
+</table>
+
+## 3 つのリポジトリ
 
 ```mermaid
 flowchart LR
-    KMP["kmp-app-template<br/>← このリポジトリ"]
+    KMP["kmp-app-template<br/>共通ロジック"]
     AND["android-app-template<br/>Android アプリ"]
     IOS["ios-app-template<br/>iOS アプリ"]
-    KMP -->|"AAR / klib"| AND
-    KMP -->|"Shared.xcframework"| IOS
+    KMP -->|"AAR / klib<br/>GitHub Packages"| AND
+    KMP -->|"Shared.xcframework<br/>GitHub Releases + SPM"| IOS
 ```
 
-[ios-app-template](https://github.com/yossibank/ios-app-template) ・
-[android-app-template](https://github.com/yossibank/android-app-template)
+[android-app-template](https://github.com/yossibank/android-app-template) ・ [ios-app-template](https://github.com/yossibank/ios-app-template)
 
-## モジュール構成
+## 使い方
 
-```mermaid
-flowchart LR
-    COMMON["commonMain<br/><i>共通ロジック</i>"]
-    AAR["AAR / klib"]
-    XCF["Shared.xcframework"]
-    AND["android-app-template"]
-    IOS["ios-app-template"]
-    COMMON --> AAR --> AND
-    COMMON --> XCF --> IOS
-```
+変更したら `make verify` を通します。
 
-単一モジュール（`:shared`）。iOS へは XCFramework 1 枚として公開される。
+> [!NOTE]
+> 公開 API は `shared/api/` にダンプしてあり、差分があると `make verify` が落ちます。API を変えたら `make api` で更新します。
 
-## ディレクトリ
+<details>
+<summary>リリース</summary>
 
-```
-shared/
-├── build.gradle.kts        # ターゲット・配布・SKIE・モデル生成の設定
-├── api/                    # 公開 API のダンプ（差分が出たら消費側が壊れる）
-├── openapi/                # モデル生成の元にする定義
-└── src/
-    ├── commonMain/kotlin/  # 共通ロジック
-    ├── commonTest/kotlin/  # 両OSで実行されるテスト
-    ├── androidMain/kotlin/ # Android 固有の実装（現在は空）
-    └── iosMain/kotlin/     # iOS 固有の実装（現在は空）
-gradle/
-└── libs.versions.toml      # 依存とバージョン（ここにのみ書く）
-Package.swift               # iOS から SPM で参照するための宣言
-```
+GitHub Actions の **Release** ワークフローにバージョン（semver）を渡して実行します（手元では `./release.sh <version>`）。XCFramework のビルド、GitHub Packages への publish、`Package.swift` の更新、タグ付けまでを行います。
 
-## コマンド
+リリース後に、アプリ側 2 リポジトリのバージョン指定を上げます。
 
-| コマンド | 内容 |
-| --- | --- |
-| `make verify` | XCFramework のビルド + 全ターゲットのテスト（変更後はこれを通す） |
-| `make build-android` | AAR / klib |
-| `make build-ios` | Release の `Shared.xcframework` → `shared/build/XCFrameworks/release/` |
-| `make test` | 全ターゲットのテスト |
-| `make lint` | ktlint によるチェック（`make verify` に含まれる） |
-| `make format` | ktlint で自動修正 |
-| `make api` | 公開 API のダンプ（`shared/api/`）を更新する。`make verify` は差分があると落ちる |
-| `make publish-local` | mavenLocal へ publish（アプリ側から参照するため） |
-| `make publish-github` | GitHub Packages へ publish（`gpr.user` / `gpr.token` が必要） |
-
-## リリース
-
-GitHub Actions の **Release** ワークフローを実行し、バージョンを semver で渡す。
-XCFramework のビルド、GitHub Packages への publish、リリース作成、`Package.swift` の生成、
-コミットとタグまでを 1 回で行う。手元の Xcode 設定に左右されない。
-
-同じ手順を手元で実行する `release.sh` も残してある。引数は同じ。
-
-リリース後に消費側 2 リポジトリのバージョン指定を更新し、その PR を開く。publish される前に
-PR を開くと、pin を解決できずに落ちる。
-
-3 リポジトリに跨る変更では、3 つとも同じブランチ名にする。kmp の verify が消費側の同名
-ブランチをビルドするので、release を待たずに 3 リポジトリ分の整合を確認できる。
-
-## 環境
-
-| 項目 | 出所 |
-| --- | --- |
-| Kotlin・AGP・SKIE・Ktor・依存 | [gradle/libs.versions.toml](gradle/libs.versions.toml) |
-| Gradle | [gradle/wrapper/gradle-wrapper.properties](gradle/wrapper/gradle-wrapper.properties) |
-| compileSdk / minSdk・JVM ターゲット・iOS ターゲット | [shared/build.gradle.kts](shared/build.gradle.kts) |
-| JDK（CI） | [.github/workflows/verify.yml](.github/workflows/verify.yml) |
-| Xcode | リポジトリでは固定していない。CI は [verify.yml](.github/workflows/verify.yml) のランナー任せ |
+</details>
