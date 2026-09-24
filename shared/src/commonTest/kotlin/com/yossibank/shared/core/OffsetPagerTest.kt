@@ -169,30 +169,6 @@ class OffsetPagerTest {
     }
 
     @Test
-    fun revise_replaces_the_loaded_items() = runTest {
-        val pager = Source(total = 3).pager(pageSize = 3)
-
-        pager.loadNext()
-        val revised = assertLoaded(pager.revise { items -> Revision(items.map { it * 10 }, failure = null) })
-
-        assertEquals(listOf(0, 10, 20), revised.items)
-        assertEquals(listOf(0, 10, 20), assertLoaded(pager.loadNext()).items, "書き換えが次の結果に残っていない")
-    }
-
-    @Test
-    fun a_revision_that_fails_keeps_the_list_and_says_why() = runTest {
-        val pager = Source(total = 2).pager(pageSize = 2)
-
-        pager.loadNext()
-        val degraded = assertIs<PageResult.Loaded<Int>>(
-            pager.revise { items -> Revision(items, failure = ApiFailure.Timeout) },
-        )
-
-        assertEquals(ApiFailure.Timeout, degraded.failure)
-        assertEquals(listOf(0, 1), degraded.items)
-    }
-
-    @Test
     fun reset_does_not_block_behind_a_cancelled_load() = runTest {
         withContext(Dispatchers.Default) {
             val source = Source(total = 100).apply { stallFirstPage = CompletableDeferred() }

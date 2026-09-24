@@ -10,11 +10,6 @@ internal data class Page<T>(
     val total: Int,
 )
 
-internal data class Revision<T>(
-    val items: List<T>,
-    val failure: ApiFailure?,
-)
-
 internal sealed interface PageResult<out T> {
     data class Loaded<T>(
         val items: List<T>,
@@ -59,17 +54,6 @@ internal class OffsetPager<T>(
             }
 
             is ApiResult.Err -> commit(start.generation) { result(failure = page.failure) }
-        }
-    }
-
-    suspend fun revise(transform: suspend (List<T>) -> Revision<T>): PageResult<T> = loadMutex.withLock {
-        val (startGeneration, items) = stateMutex.withLock { generation to loaded.toList() }
-        val revision = transform(items)
-
-        commit(startGeneration) {
-            loaded.clear()
-            loaded += revision.items
-            result(failure = revision.failure)
         }
     }
 

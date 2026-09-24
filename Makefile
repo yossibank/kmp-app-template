@@ -6,6 +6,7 @@ endif
 
 verify:
 	./gradlew :shared:ktlintCheck :shared:checkKotlinAbi :shared:assembleAndroidMain :shared:assembleSharedReleaseXCFramework :shared:allTests $(GRADLE_FLAGS)
+	@sh Scripts/check-ios-api.sh
 
 lint:
 	./gradlew :shared:ktlintCheck $(GRADLE_FLAGS)

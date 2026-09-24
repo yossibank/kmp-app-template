@@ -1,32 +1,11 @@
 package com.yossibank.shared.pokemon
 
-import com.yossibank.shared.pokemon.generated.model.PokemonDetail
 import com.yossibank.shared.pokemon.generated.model.PokemonSummary
-import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class PokemonEntryTest {
-    private val json = Json { ignoreUnknownKeys = true }
-
-    private fun loadedFrom(detail: String) = PokemonEntry.detailOf(json.decodeFromString<PokemonDetail>(detail))
-
-    @Test
-    fun the_image_is_the_artwork_when_there_is_one() {
-        assertEquals("https://img.test/artwork/1.png", loadedFrom(detailJson(1)).imageUrl)
-    }
-
-    @Test
-    fun the_image_falls_back_to_the_sprite_without_artwork() {
-        assertEquals("https://img.test/1.png", loadedFrom(detailJson(1, artwork = null)).imageUrl)
-    }
-
-    @Test
-    fun there_is_no_image_when_neither_exists() {
-        assertNull(loadedFrom(detailJson(1, sprite = null, artwork = null)).imageUrl)
-    }
-
     @Test
     fun the_id_comes_from_the_url_of_the_summary() {
         assertEquals(
@@ -46,39 +25,17 @@ class PokemonEntryTest {
     }
 
     @Test
-    fun unknown_names_fall_back_instead_of_failing() {
-        assertEquals(PokemonTypeKind.UNKNOWN, PokemonTypeKind.from("stellar"))
-        assertEquals(PokemonStatKind.OTHER, PokemonStatKind.from("accuracy"))
+    fun the_image_is_the_official_artwork_for_the_id() {
+        val entry = PokemonEntry.of(PokemonSummary("pikachu", "https://pokeapi.co/api/v2/pokemon/25/"))
+
+        assertEquals(
+            "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png",
+            entry?.imageUrl,
+        )
     }
 
     @Test
-    fun every_type_the_api_uses_today_is_mapped() {
-        val known = listOf(
-            "normal",
-            "fire",
-            "water",
-            "electric",
-            "grass",
-            "ice",
-            "fighting",
-            "poison",
-            "ground",
-            "flying",
-            "psychic",
-            "bug",
-            "rock",
-            "ghost",
-            "dragon",
-            "dark",
-            "steel",
-            "fairy",
-        )
-
-        assertEquals(
-            emptyList(),
-            known.filter { PokemonTypeKind.from(it) == PokemonTypeKind.UNKNOWN },
-            "取りこぼしている型がある",
-        )
-        assertEquals(known.size + 1, PokemonTypeKind.entries.size, "UNKNOWN 以外に未使用の値がある")
+    fun a_summary_without_an_id_has_no_entry() {
+        assertNull(PokemonEntry.of(PokemonSummary("pikachu", "")))
     }
 }

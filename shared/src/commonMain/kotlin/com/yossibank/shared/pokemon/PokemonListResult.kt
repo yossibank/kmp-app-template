@@ -8,9 +8,7 @@ sealed interface PokemonListResult {
         val hasMore: Boolean,
         val total: Int,
         val failure: ApiFailure? = null,
-    ) : PokemonListResult {
-        val incompleteCount: Int get() = pokemon.count { it.detail is PokemonEntryDetail.Missing }
-    }
+    ) : PokemonListResult
 
     data class Failed(
         val failure: ApiFailure,
