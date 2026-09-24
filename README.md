@@ -56,7 +56,7 @@ Package.swift               # iOS から SPM で参照するための宣言
 | --- | --- |
 | `make verify` | XCFramework のビルド + 全ターゲットのテスト（変更後はこれを通す） |
 | `make build-android` | AAR / klib |
-| `make build-ios` | `Shared.xcframework` → `shared/build/XCFrameworks/{debug,release}/` |
+| `make build-ios` | Release の `Shared.xcframework` → `shared/build/XCFrameworks/release/` |
 | `make test` | 全ターゲットのテスト |
 | `make lint` | ktlint によるチェック（`make verify` に含まれる） |
 | `make format` | ktlint で自動修正 |
