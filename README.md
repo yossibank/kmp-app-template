@@ -60,6 +60,17 @@ flowchart LR
 > 公開 API は `shared/api/` にダンプしてあり、差分があると `make verify` が落ちます。API を変えたら `make api` で更新します。
 
 <details>
+<summary>テンプレートから作ったとき</summary>
+
+パッケージの接頭辞と GitHub のオーナーを置き換えます。3 つのリポジトリそれぞれで実行します。
+
+```sh
+Scripts/rename.sh <GitHub のオーナー> <パッケージの接頭辞>    # 例: Scripts/rename.sh acme com.acme
+```
+
+</details>
+
+<details>
 <summary>リリース</summary>
 
 GitHub Actions の **Release** ワークフローにバージョン（semver）を渡して実行します（手元では `./release.sh <version>`）。
