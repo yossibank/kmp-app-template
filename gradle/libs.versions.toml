@@ -3,7 +3,7 @@ agp = "9.4.1"
 kotlin = "2.4.10"
 ktlint = "14.2.0"
 openapi = "7.25.0"
-skie = "0.10.14"
+skie = "0.10.15"
 
 kotlinx-coroutines = "1.11.0"
 kotlinx-serialization = "1.11.0"
