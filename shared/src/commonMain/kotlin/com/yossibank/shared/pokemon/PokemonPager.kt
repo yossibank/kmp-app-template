@@ -22,13 +22,21 @@ class PokemonPager internal constructor(
         }
     }
 
-    suspend fun loadNext(): PokemonListResult = when (val result = pager.loadNext()) {
-        is PageResult.Loaded -> PokemonListResult.Loaded(result.items, result.hasMore, result.total, result.failure)
-        is PageResult.Failed -> PokemonListResult.Failed(result.failure)
-        PageResult.Stale -> PokemonListResult.Stale
+    suspend fun reload(): PokemonListResult {
+        pager.reset()
+        return loadNext()
     }
 
-    suspend fun reset() = pager.reset()
+    suspend fun loadNext(): PokemonListResult = when (val result = pager.loadNext()) {
+        is PageResult.Loaded -> when (val failure = result.failure) {
+            null -> PokemonListResult.Loaded(result.items, result.hasMore, result.total)
+            else -> PokemonListResult.Degraded(result.items, result.hasMore, result.total, failure)
+        }
+
+        is PageResult.Failed -> PokemonListResult.Failed(result.failure)
+
+        PageResult.Stale -> PokemonListResult.Stale
+    }
 
     fun close() = api.close()
 }

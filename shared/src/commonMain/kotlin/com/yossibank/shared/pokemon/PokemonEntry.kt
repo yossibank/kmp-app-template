@@ -7,6 +7,11 @@ data class PokemonEntry(
     val name: String,
     val imageUrl: String,
 ) {
+    val displayName: String
+        get() = name
+            .split('-')
+            .joinToString("-") { it.replaceFirstChar(Char::uppercaseChar) }
+
     internal companion object {
         private const val ARTWORK_BASE_URL =
             "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork"

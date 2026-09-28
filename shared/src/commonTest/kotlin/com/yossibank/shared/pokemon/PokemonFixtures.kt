@@ -1,7 +1,6 @@
 package com.yossibank.shared.pokemon
 
 import kotlin.test.assertIs
-import kotlin.test.assertNull
 
 internal const val TEST_BASE_URL = "https://example.test"
 
@@ -24,6 +23,4 @@ internal fun pageJson(
 internal fun assertLoaded(
     result: PokemonListResult,
     message: String? = null,
-): PokemonListResult.Loaded = assertIs<PokemonListResult.Loaded>(result, message).also {
-    assertNull(it.failure, message ?: "失敗を連れた結果になっている")
-}
+): PokemonListResult.Loaded = assertIs<PokemonListResult.Loaded>(result, message)
