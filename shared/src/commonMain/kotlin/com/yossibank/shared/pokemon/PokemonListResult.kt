@@ -7,7 +7,13 @@ sealed interface PokemonListResult {
         val pokemon: List<PokemonEntry>,
         val hasMore: Boolean,
         val total: Int,
-        val failure: ApiFailure? = null,
+    ) : PokemonListResult
+
+    data class Degraded(
+        val pokemon: List<PokemonEntry>,
+        val hasMore: Boolean,
+        val total: Int,
+        val failure: ApiFailure,
     ) : PokemonListResult
 
     data class Failed(

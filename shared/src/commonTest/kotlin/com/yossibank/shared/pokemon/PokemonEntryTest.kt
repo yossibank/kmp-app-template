@@ -35,7 +35,17 @@ class PokemonEntryTest {
     }
 
     @Test
+    fun the_display_name_capitalizes_each_part_of_a_hyphenated_name() {
+        assertEquals("Pikachu", entry("pikachu").displayName)
+        assertEquals("Mr-Mime", entry("mr-mime").displayName)
+        assertEquals("Ho-Oh", entry("ho-oh").displayName)
+        assertEquals("Porygon-Z", entry("porygon-z").displayName)
+    }
+
+    @Test
     fun a_summary_without_an_id_has_no_entry() {
         assertNull(PokemonEntry.of(PokemonSummary("pikachu", "")))
     }
+
+    private fun entry(name: String) = PokemonEntry(id = 1, name = name, imageUrl = "")
 }

@@ -16,7 +16,7 @@ iOS と Android で共有するロジックを Kotlin Multiplatform で書いた
 
 </div>
 
-PokeAPI からの一覧取得・ページング・エラーの分類を担います。
+PokeAPI からの一覧取得・ページング・エラーの分類と、アートワークから色を取り出す計算を担います。
 
 <table>
   <tr>
