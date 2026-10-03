@@ -46,7 +46,7 @@ flowchart LR
     KMP["kmp-app-template<br/>共通ロジック"]
     AND["android-app-template<br/>Android アプリ"]
     IOS["ios-app-template<br/>iOS アプリ"]
-    KMP -->|"AAR / klib<br/>GitHub Packages"| AND
+    KMP -->|"AAR<br/>AWS CodeArtifact"| AND
     KMP -->|"Shared.xcframework<br/>GitHub Releases + SPM"| IOS
 ```
 
@@ -73,11 +73,11 @@ scripts/rename.sh <GitHub のオーナー> <パッケージの接頭辞>    # �
 <details>
 <summary>リリース</summary>
 
-GitHub Actions の **Release** ワークフローにバージョン（semver）を渡して実行します（手元では `./release.sh <version>`）。
+GitHub Actions の **Release** ワークフローにバージョン（semver）を渡して実行します（手元では AWS にログインしたうえで `./release.sh <version>`）。
 
 1. XCFramework をビルドする
 2. `Package.swift` を更新してタグを付ける
-3. GitHub Packages へ publish する
+3. Android 向けの AAR を AWS CodeArtifact へ publish する
 
 リリース後に、アプリ側 2 リポジトリのバージョン指定を上げます。
 
