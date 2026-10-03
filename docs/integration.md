@@ -76,6 +76,8 @@ dependencyResolutionManagement {
 
 ### 3. 起動時に設定する
 
+KMP の型は Kotlin の型なので、境界のモジュールは作らずにそのまま使います。
+
 ```kotlin
 class App : Application() {
     override fun onCreate() {
