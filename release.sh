@@ -38,8 +38,9 @@ fi
 
 make verify
 
-export GITHUB_ACTOR="${GITHUB_ACTOR:-$(gh api user --jq .login)}"
-export GITHUB_TOKEN="${GITHUB_TOKEN:-$(gh auth token)}"
+export CODEARTIFACT_AUTH_TOKEN="${CODEARTIFACT_AUTH_TOKEN:-$(aws codeartifact get-authorization-token \
+    --domain yossibank --domain-owner 724669215656 --region ap-northeast-1 \
+    --query authorizationToken --output text)}"
 
 BASE_COMMIT="$(git rev-parse HEAD)"
 STAGE="edited"
@@ -68,7 +69,7 @@ on_error() {
             echo >&2
             echo "${TAG} は push 済みですが publish が終わっていません。" >&2
             echo "バージョンはまだ使えます。同じ番号のまま次で再開してください:" >&2
-            echo "  ./gradlew :${MODULE}:publishAllPublicationsToGitHubPackagesRepository" >&2
+            echo "  ./gradlew :${MODULE}:publishAndroidPublicationToCodeArtifactRepository" >&2
             echo "  gh release edit ${TAG} --draft=false" >&2
             ;;
     esac
@@ -114,7 +115,7 @@ STAGE="pushed"
 git push -q origin HEAD
 git push -q origin "$TAG"
 
-./gradlew ":${MODULE}:publishAllPublicationsToGitHubPackagesRepository"
+./gradlew ":${MODULE}:publishAndroidPublicationToCodeArtifactRepository"
 gh release edit "$TAG" --tag "$TAG" --draft=false >/dev/null
 
 trap - ERR
