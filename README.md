@@ -78,7 +78,6 @@ GitHub Actions の **Release** ワークフローにバージョン（semver）�
 1. XCFramework をビルドする
 2. `Package.swift` に URL とチェックサムを書いたコミットを作り、タグだけを push する（main は変えない）
 3. Android 向けの AAR を AWS CodeArtifact へ publish する
-
-リリース後に、アプリ側 2 リポジトリのバージョン指定を上げます。
+4. アプリ側 2 リポジトリに、版を上げる PR を開く
 
 </details>

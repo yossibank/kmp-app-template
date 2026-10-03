@@ -57,3 +57,25 @@ jobs:
           VERSION: ${{ inputs.version }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./release.sh "$VERSION"
+
+      - name: Create a token for the apps
+        id: apps-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.SHARED_CORE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.SHARED_CORE_APP_PRIVATE_KEY }}
+          repositories: ${{ github.event.repository.name }},android-app-template,ios-app-template
+          permission-contents: write
+          permission-pull-requests: write
+
+      - name: Open pull requests in the apps
+        env:
+          VERSION: ${{ inputs.version }}
+          GH_TOKEN: ${{ steps.apps-token.outputs.token }}
+        run: |
+          umask 077
+          git config --global url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          printf 'machine api.github.com\n  login x-access-token\n  password %s\n' "$GH_TOKEN" > "$HOME/.netrc"
+          scripts/open-app-prs.sh "$VERSION"
