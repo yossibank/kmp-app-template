@@ -11,7 +11,6 @@ fi
 
 VERSION="$1"
 TAG="v${VERSION}"
-BUILD_FILE="${MODULE}/build.gradle.kts"
 ZIP="${MODULE}/build/spm/${FRAMEWORK}.xcframework.zip"
 CHECKSUM_FILE="${MODULE}/build/spm/checksum.txt"
 
@@ -44,14 +43,13 @@ export CODEARTIFACT_AUTH_TOKEN="${CODEARTIFACT_AUTH_TOKEN:-$(aws codeartifact ge
     --domain "$(codeartifact domain)" --domain-owner "$(codeartifact owner)" --region "$(codeartifact region)" \
     --query authorizationToken --output text)}"
 
-BASE_COMMIT="$(git rev-parse HEAD)"
 STAGE="edited"
 
-undo_edit() { git checkout -- "$BUILD_FILE" Package.swift >/dev/null 2>&1 || true; }
+undo_edit() { git checkout -- Package.swift >/dev/null 2>&1 || true; }
 undo_draft() { gh release delete "$TAG" --yes >/dev/null 2>&1 || true; }
 undo_commit() {
     git tag -d "$TAG" >/dev/null 2>&1 || true
-    git reset -q --hard "$BASE_COMMIT"
+    git switch -q -f "$BRANCH"
 }
 
 on_error() {
@@ -68,10 +66,11 @@ on_error() {
             undo_commit
             ;;
         pushed)
+            git switch -q "$BRANCH" || true
             echo >&2
             echo "${TAG} は push 済みですが publish が終わっていません。" >&2
             echo "バージョンはまだ使えます。同じ番号のまま次で再開してください:" >&2
-            echo "  ./gradlew :${MODULE}:publishAndroidPublicationToCodeArtifactRepository" >&2
+            echo "  ./gradlew :${MODULE}:publishAndroidPublicationToCodeArtifactRepository -PreleaseVersion=${VERSION}" >&2
             echo "  gh release edit ${TAG} --draft=false" >&2
             ;;
     esac
@@ -79,9 +78,6 @@ on_error() {
 trap on_error ERR
 
 echo "▶ ${TAG} のリリースを開始します"
-
-sed -i '' "s/^version = \".*\"$/version = \"${VERSION}\"/" "$BUILD_FILE"
-echo "  version = ${VERSION} を ${BUILD_FILE} に書き込みました"
 
 ./gradlew ":${MODULE}:packageXCFramework"
 [ -f "$ZIP" ] || { echo "zip が生成されていません: $ZIP" >&2; exit 1; }
@@ -109,18 +105,20 @@ grep -qF "url: \"${ASSET_URL}\"," Package.swift && grep -qF "checksum: \"${CHECK
     { echo "Package.swift の url / checksum を書き換えられませんでした" >&2; false; }
 
 STAGE="committed"
-git add Package.swift "$BUILD_FILE"
+git switch -q --detach
+git add Package.swift
 git commit -q -m "Release ${TAG}"
 git tag -a "$TAG" -m "${FRAMEWORK} ${VERSION}"
 
 STAGE="pushed"
-git push -q origin HEAD
 git push -q origin "$TAG"
 
-./gradlew ":${MODULE}:publishAndroidPublicationToCodeArtifactRepository"
+./gradlew ":${MODULE}:publishAndroidPublicationToCodeArtifactRepository" -PreleaseVersion="${VERSION}"
 gh release edit "$TAG" --tag "$TAG" --draft=false >/dev/null
 
 trap - ERR
+
+git switch -q "$BRANCH"
 
 echo
 echo "✅ ${TAG} をリリースしました"

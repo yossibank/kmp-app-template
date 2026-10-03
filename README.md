@@ -76,7 +76,7 @@ scripts/rename.sh <GitHub のオーナー> <パッケージの接頭辞>    # �
 GitHub Actions の **Release** ワークフローにバージョン（semver）を渡して実行します（手元では AWS にログインしたうえで `./release.sh <version>`）。
 
 1. XCFramework をビルドする
-2. `Package.swift` を更新してタグを付ける
+2. `Package.swift` に URL とチェックサムを書いたコミットを作り、タグだけを push する（main は変えない）
 3. Android 向けの AAR を AWS CodeArtifact へ publish する
 
 リリース後に、アプリ側 2 リポジトリのバージョン指定を上げます。

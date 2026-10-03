@@ -25,7 +25,8 @@ publish-local:
 	./gradlew :shared:publishToMavenLocal
 
 publish:
-	./gradlew :shared:publishAndroidPublicationToCodeArtifactRepository
+	$(if $(VERSION),,$(error VERSION を指定してください（例: make publish VERSION=0.3.0）))
+	./gradlew :shared:publishAndroidPublicationToCodeArtifactRepository -PreleaseVersion=$(VERSION)
 
 test:
 	./gradlew :shared:allTests

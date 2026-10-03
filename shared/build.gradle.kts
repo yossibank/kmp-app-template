@@ -14,7 +14,7 @@ plugins {
 }
 
 group = "com.yossibank"
-version = "0.24.0"
+version = providers.gradleProperty("releaseVersion").getOrElse("0.0.0-SNAPSHOT")
 
 fun codeArtifact(name: String) = providers.gradleProperty("codeArtifact.$name").get()
 
