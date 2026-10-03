@@ -1,6 +1,6 @@
 <div align="center">
 
-# kmp-app-template
+# 🧩 kmp-app-template
 
 iOS と Android で共有するロジックを Kotlin Multiplatform で書いたライブラリ
 
@@ -14,16 +14,10 @@ iOS と Android で共有するロジックを Kotlin Multiplatform で書いた
 ![SKIE](https://img.shields.io/badge/SKIE-555555)
 ![OpenAPI](https://img.shields.io/badge/OpenAPI-6BA539?logo=openapiinitiative&logoColor=white)
 
-</div>
-
-DummyJSON へのログインとトークンの保存・更新、商品一覧の取得・ページング、エラーの分類を担います。
-
-<div align="center">
-
 <table>
   <tr>
-    <th>iOS（SwiftUI）</th>
-    <th>Android（Jetpack Compose）</th>
+    <th>🍎 iOS（SwiftUI）</th>
+    <th>🤖 Android（Jetpack Compose）</th>
   </tr>
   <tr>
     <td>
@@ -43,45 +37,64 @@ DummyJSON へのログインとトークンの保存・更新、商品一覧の�
 
 </div>
 
-## 3 つのリポジトリ
+## 📦 共通コアが担うこと
+
+| | 内容 |
+| --- | --- |
+| 🔐 ログイン | DummyJSON へのログインと、トークンの保存（Keychain / Keystore）・更新 |
+| 🛍️ 商品一覧 | 取得とページング |
+| ⚠️ エラー | 通信の失敗を分類して返す |
+
+## 🔗 3 つのリポジトリ
 
 ```mermaid
 flowchart LR
-    KMP["kmp-app-template<br/>共通ロジック"]
-    AND["android-app-template<br/>Android アプリ"]
-    IOS["ios-app-template<br/>iOS アプリ"]
+    KMP["🧩 kmp-app-template<br/>共通ロジック"]
+    AND["🤖 android-app-template<br/>Android アプリ"]
+    IOS["🍎 ios-app-template<br/>iOS アプリ"]
     KMP -->|"AAR<br/>AWS CodeArtifact"| AND
     KMP -->|"Shared.xcframework<br/>GitHub Releases + SPM"| IOS
+    style KMP stroke-width:3px
 ```
 
-[android-app-template](https://github.com/yossibank/android-app-template) ・ [ios-app-template](https://github.com/yossibank/ios-app-template)
+[🍎 ios-app-template](https://github.com/yossibank/ios-app-template) ・ [🤖 android-app-template](https://github.com/yossibank/android-app-template)
 
-## 使い方
+## 🚀 使い方
 
-変更したら `make verify` を通します。既存のアプリに組み込む手順は [docs/integration.md](docs/integration.md) にあります。
+| コマンド | いつ使うか |
+| --- | --- |
+| `make verify` | 変更したら通す |
+| `make api` | 公開 API を変えたら、`shared/api/` のダンプを更新する |
+
+> [!IMPORTANT]
+> 公開 API のダンプと差分があると `make verify` が落ちます。
+
+> [!TIP]
+> 既存のアプリに組み込む手順は [docs/integration.md](docs/integration.md) にあります。
+
+## 🏷️ リリース
+
+GitHub Actions の **Release** ワークフローにバージョン（semver）を渡して実行します。
+
+```mermaid
+flowchart LR
+    BUILD["🔨 XCFramework<br/>をビルド"]
+    TAG["🏷️ タグだけ push<br/><i>main は変えない</i>"]
+    AAR["📦 AAR を<br/>CodeArtifact へ"]
+    PR["🔀 アプリ 2 つに<br/>バージョン上げの PR"]
+    BUILD --> TAG --> AAR --> PR
+```
 
 > [!NOTE]
-> 公開 API は `shared/api/` にダンプしてあり、差分があると `make verify` が落ちます。API を変えたら `make api` で更新します。
+> 手元からは、AWS にログインしたうえで `./release.sh <version>` を実行します。
 
 <details>
-<summary>テンプレートから作ったとき</summary>
+<summary>🧰 テンプレートから作ったとき</summary>
 
 パッケージの接頭辞と GitHub のオーナーを置き換えます。3 つのリポジトリそれぞれで実行します。
 
 ```sh
 scripts/rename.sh <GitHub のオーナー> <パッケージの接頭辞>    # 例: scripts/rename.sh acme com.acme
 ```
-
-</details>
-
-<details>
-<summary>リリース</summary>
-
-GitHub Actions の **Release** ワークフローにバージョン（semver）を渡して実行します（手元では AWS にログインしたうえで `./release.sh <version>`）。
-
-1. XCFramework をビルドする
-2. `Package.swift` に URL とチェックサムを書いたコミットを作り、タグだけを push する（main は変えない）
-3. Android 向けの AAR を AWS CodeArtifact へ publish する
-4. アプリ側 2 リポジトリに、バージョンを上げる PR を開く
 
 </details>
