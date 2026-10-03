@@ -37,11 +37,7 @@ publishing {
 
 kotlin {
     @OptIn(ExperimentalAbiValidation::class)
-    abiValidation {
-        filters {
-            exclude.byNames.add("com.yossibank.shared.pokemon.generated.**")
-        }
-    }
+    abiValidation {}
 
     android {
         namespace = "com.yossibank.shared"
@@ -185,6 +181,7 @@ openApiGenerate {
     configOptions.set(
         mapOf(
             "dateLibrary" to "string",
+            "nonPublicApi" to "true",
         ),
     )
 }
