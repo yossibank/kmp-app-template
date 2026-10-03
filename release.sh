@@ -39,9 +39,10 @@ check_can_release() {
 codeartifact() { sed -n "s/^codeArtifact\.$1=//p" gradle.properties; }
 
 login_codeartifact() {
-    export CODEARTIFACT_AUTH_TOKEN="${CODEARTIFACT_AUTH_TOKEN:-$(aws codeartifact get-authorization-token \
+    CODEARTIFACT_AUTH_TOKEN="${CODEARTIFACT_AUTH_TOKEN:-$(aws codeartifact get-authorization-token \
         --domain "$(codeartifact domain)" --domain-owner "$(codeartifact owner)" --region "$(codeartifact region)" \
         --query authorizationToken --output text)}"
+    export CODEARTIFACT_AUTH_TOKEN
 }
 
 build_xcframework() {
@@ -60,7 +61,7 @@ upload_draft() {
         [ -n "$ASSET_URL" ] && break
         sleep 1
     done
-    [ -n "$ASSET_URL" ] || { echo "アセットの API URL を取得できませんでした" >&2; exit 1; }
+    [ -n "$ASSET_URL" ] || { echo "アセットの API URL を取得できませんでした" >&2; false; }
 
     ASSET_URL="${ASSET_URL}.zip"
 }
