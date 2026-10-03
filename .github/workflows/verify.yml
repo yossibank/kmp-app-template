@@ -90,9 +90,9 @@ jobs:
         env:
           SHARED_DIR: ${{ github.workspace }}
         run: >-
-          xcodebuild build
+          xcodebuild build-for-testing
           -workspace AppTemplate.xcworkspace
-          -scheme SharedCore
+          -scheme AppTemplate
           -destination 'generic/platform=iOS Simulator'
           ARCHS=arm64
           SWIFT_SUPPRESS_WARNINGS=NO
@@ -129,4 +129,4 @@ jobs:
         working-directory: android
         env:
           SHARED_DIR: ${{ github.workspace }}/kmp
-        run: ./gradlew compileDebugKotlin
+        run: ./gradlew compileDebugUnitTestKotlin
