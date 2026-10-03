@@ -156,10 +156,10 @@ final class com.yossibank.shared.product/ProductEntry { // com.yossibank.shared.
 
     final val id // com.yossibank.shared.product/ProductEntry.id|{}id[0]
         final fun <get-id>(): kotlin/Int // com.yossibank.shared.product/ProductEntry.id.<get-id>|<get-id>(){}[0]
+    final val name // com.yossibank.shared.product/ProductEntry.name|{}name[0]
+        final fun <get-name>(): kotlin/String // com.yossibank.shared.product/ProductEntry.name.<get-name>|<get-name>(){}[0]
     final val thumbnailUrl // com.yossibank.shared.product/ProductEntry.thumbnailUrl|{}thumbnailUrl[0]
         final fun <get-thumbnailUrl>(): kotlin/String // com.yossibank.shared.product/ProductEntry.thumbnailUrl.<get-thumbnailUrl>|<get-thumbnailUrl>(){}[0]
-    final val title // com.yossibank.shared.product/ProductEntry.title|{}title[0]
-        final fun <get-title>(): kotlin/String // com.yossibank.shared.product/ProductEntry.title.<get-title>|<get-title>(){}[0]
 
     final fun component1(): kotlin/Int // com.yossibank.shared.product/ProductEntry.component1|component1(){}[0]
     final fun component2(): kotlin/String // com.yossibank.shared.product/ProductEntry.component2|component2(){}[0]

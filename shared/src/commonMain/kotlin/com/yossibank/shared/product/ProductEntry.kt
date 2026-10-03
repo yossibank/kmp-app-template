@@ -4,13 +4,13 @@ import com.yossibank.shared.generated.model.ProductSummary
 
 data class ProductEntry(
     val id: Int,
-    val title: String,
+    val name: String,
     val thumbnailUrl: String,
 ) {
     internal companion object {
         fun of(summary: ProductSummary) = ProductEntry(
             id = summary.id,
-            title = summary.title,
+            name = summary.title,
             thumbnailUrl = summary.thumbnail,
         )
     }

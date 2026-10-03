@@ -44,7 +44,7 @@ class ProductPagerTest {
         val loaded = assertIs<ProductListResult.Loaded>(Catalog(total = 2).pager(pageSize = 2).loadNext())
 
         assertEquals(listOf(0, 1), loaded.products.map { it.id })
-        assertEquals(listOf("p0", "p1"), loaded.products.map { it.title })
+        assertEquals(listOf("p0", "p1"), loaded.products.map { it.name })
         assertEquals("https://example.test/0.webp", loaded.products.first().thumbnailUrl)
         assertFalse(loaded.hasMore)
     }
