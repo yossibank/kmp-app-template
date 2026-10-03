@@ -38,8 +38,10 @@ fi
 
 make verify
 
+codeartifact() { sed -n "s/^codeArtifact\.$1=//p" gradle.properties; }
+
 export CODEARTIFACT_AUTH_TOKEN="${CODEARTIFACT_AUTH_TOKEN:-$(aws codeartifact get-authorization-token \
-    --domain yossibank --domain-owner 724669215656 --region ap-northeast-1 \
+    --domain "$(codeartifact domain)" --domain-owner "$(codeartifact owner)" --region "$(codeartifact region)" \
     --query authorizationToken --output text)}"
 
 BASE_COMMIT="$(git rev-parse HEAD)"

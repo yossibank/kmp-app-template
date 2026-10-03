@@ -16,11 +16,16 @@ plugins {
 group = "com.yossibank"
 version = "0.24.0"
 
+fun codeArtifact(name: String) = providers.gradleProperty("codeArtifact.$name").get()
+
 publishing {
     repositories {
         maven {
             name = "CodeArtifact"
-            url = uri("https://yossibank-724669215656.d.codeartifact.ap-northeast-1.amazonaws.com/maven/kmp/")
+            url = uri(
+                "https://${codeArtifact("domain")}-${codeArtifact("owner")}.d.codeartifact." +
+                    "${codeArtifact("region")}.amazonaws.com/maven/${codeArtifact("repository")}/",
+            )
             credentials {
                 username = "aws"
                 password = providers.environmentVariable("CODEARTIFACT_AUTH_TOKEN").orNull
