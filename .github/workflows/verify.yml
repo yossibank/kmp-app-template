@@ -123,6 +123,10 @@ jobs:
           repository: ${{ github.repository_owner }}/android-app-template
           path: android
 
+      - name: Check the versions brought into the app
+        working-directory: kmp
+        run: sh scripts/check-app-versions.sh ../android
+
       - name: Set up JDK
         uses: actions/setup-java@v6
         with:
