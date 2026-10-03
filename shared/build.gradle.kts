@@ -154,21 +154,24 @@ tasks.register<PackageXCFrameworkTask>("packageXCFramework") {
 openApiGenerate {
     generatorName.set("kotlin")
     library.set("multiplatform")
-    inputSpec.set("$projectDir/openapi/pokeapi.yml")
+    inputSpec.set("$projectDir/openapi/dummyjson.yml")
     outputDir.set(
         layout.buildDirectory
             .dir("generated/openapi")
             .get()
             .asFile.path,
     )
-    modelPackage.set("com.yossibank.shared.pokemon.generated.model")
-    apiPackage.set("com.yossibank.shared.pokemon.generated")
-    packageName.set("com.yossibank.shared.pokemon.generated")
+    modelPackage.set("com.yossibank.shared.generated.model")
+    apiPackage.set("com.yossibank.shared.generated")
+    packageName.set("com.yossibank.shared.generated")
     globalProperties.set(
         mapOf(
             "models" to listOf(
-                "PaginatedPokemonSummaryList",
-                "PokemonSummary",
+                "AuthTokens",
+                "LoginRequest",
+                "ProductList",
+                "ProductSummary",
+                "RefreshRequest",
             ).joinToString(","),
         ),
     )

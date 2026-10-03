@@ -21,7 +21,7 @@ sealed interface ApiFailure {
         override val canRetry = false
     }
 
-    data object Closed : ApiFailure {
+    data object Unauthorized : ApiFailure {
         override val canRetry = false
     }
 }
