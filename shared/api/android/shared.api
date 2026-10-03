@@ -94,6 +94,7 @@ public final class com/yossibank/shared/product/ProductEntry {
 	public static synthetic fun copy$default (Lcom/yossibank/shared/product/ProductEntry;ILjava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lcom/yossibank/shared/product/ProductEntry;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getId ()I
+	public final fun getInitial ()Ljava/lang/String;
 	public final fun getThumbnailUrl ()Ljava/lang/String;
 	public final fun getTitle ()Ljava/lang/String;
 	public fun hashCode ()I

@@ -7,6 +7,9 @@ data class ProductEntry(
     val title: String,
     val thumbnailUrl: String,
 ) {
+    val initial: String
+        get() = title.take(1).uppercase()
+
     internal companion object {
         fun of(summary: ProductSummary) = ProductEntry(
             id = summary.id,
