@@ -6,6 +6,7 @@
 - バージョンを `gradle/libs.versions.toml` 以外で指定しない。
 - Kotlin・kotlinx・Ktor は、アプリ側が使っている版より新しくしない。アプリに持ち込まれ、そこでの下限になる。Renovate は承認してから PR を作る。
 - `.gitignore` に `*.jar` を追加しない（`gradle-wrapper.jar` が消える）。
+- main の `Package.swift` の URL とチェックサムは直さない。リリースのコミットはタグにだけあり、main には戻さない。
 
 ## コードの書き方
 
