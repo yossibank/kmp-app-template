@@ -5,7 +5,7 @@ OLD_OWNER="yossibank"
 OLD_PREFIX="com.yossibank"
 
 if [ $# -ne 2 ]; then
-    echo "Usage: Scripts/rename.sh <GitHub のオーナー> <パッケージの接頭辞>    例: Scripts/rename.sh acme com.acme" >&2
+    echo "Usage: scripts/rename.sh <GitHub のオーナー> <パッケージの接頭辞>    例: scripts/rename.sh acme com.acme" >&2
     exit 1
 fi
 
