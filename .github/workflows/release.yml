@@ -37,11 +37,15 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
 
+      - name: Read the CodeArtifact settings
+        id: codeartifact
+        run: sed -n 's/^codeArtifact\.\([a-z]*\)=/\1=/p' gradle.properties >> "$GITHUB_OUTPUT"
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6
         with:
-          role-to-assume: arn:aws:iam::724669215656:role/kmp-app-template-publish
-          aws-region: ap-northeast-1
+          role-to-assume: arn:aws:iam::${{ steps.codeartifact.outputs.owner }}:role/${{ github.event.repository.name }}-publish
+          aws-region: ${{ steps.codeartifact.outputs.region }}
 
       - name: Identify the committer
         run: |

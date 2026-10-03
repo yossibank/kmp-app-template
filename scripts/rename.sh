@@ -43,4 +43,4 @@ done
 echo "${OLD_PREFIX} を ${PREFIX} に、${OLD_OWNER} を ${OWNER} に置き換えました。差分を確かめてコミットしてください。"
 echo "共通コアは ${OWNER}/kmp-app-template から取得します。kmp-app-template を先にリリースするか、SHARED_DIR で手元のものを参照してください。"
 echo "LICENSE の著作権者は書き換えていません。"
-echo "AWS の CodeArtifact の URL・アカウント ID・IAM ロールは書き換えていません。自分の AWS に合わせて直してください。"
+echo "AWS の CodeArtifact は書き換えていません。gradle.properties の codeArtifact.* を自分の AWS に合わせて直してください。IAM ロールは <リポジトリ名>-publish の名前で作ります。"
