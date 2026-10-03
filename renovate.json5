@@ -8,5 +8,9 @@
       matchUpdateTypes: ["major"],
       labels: ["major"],
     },
+    {
+      matchPackageNames: ["org.jetbrains.kotlin*", "io.ktor:*"],
+      dependencyDashboardApproval: true,
+    },
   ],
 }
