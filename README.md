@@ -18,6 +18,8 @@ iOS と Android で共有するロジックを Kotlin Multiplatform で書いた
 
 DummyJSON へのログインとトークンの保存・更新、商品一覧の取得・ページング、エラーの分類を担います。
 
+<div align="center">
+
 <table>
   <tr>
     <th>iOS（SwiftUI）</th>
@@ -38,6 +40,8 @@ DummyJSON へのログインとトークンの保存・更新、商品一覧の�
     </td>
   </tr>
 </table>
+
+</div>
 
 ## 3 つのリポジトリ
 
