@@ -5,6 +5,7 @@ import io.ktor.client.engine.mock.MockEngineConfig
 import io.ktor.client.engine.mock.respond
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.content.TextContent
 import io.ktor.http.headersOf
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
@@ -48,7 +49,7 @@ private fun client(
             )
         }
     }
-    return ApiClient(baseUrl = "https://example.test", engine = MockEngine(config))
+    return ApiClient("https://example.test", httpClient(MockEngine(config)))
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -128,13 +129,27 @@ class ApiClientTest {
     }
 
     @Test
-    fun a_closed_client_says_so_instead_of_throwing() = runTest {
-        val closed = client()
+    fun a_rejected_token_is_unauthorized_rather_than_a_server_failure() = runTest {
+        val result = assertIs<ApiResult.Err>(client(status = HttpStatusCode.Unauthorized).get<Probe>("/probe"))
 
-        closed.close()
+        assertEquals(ApiFailure.Unauthorized, result.failure, "認証切れがサーバーの失敗に紛れている")
+        assertFalse(ApiFailure.Unauthorized.canRetry)
+    }
 
-        val result = assertIs<ApiResult.Err>(closed.get<Probe>("/probe"), "close 後の取得が成功している")
-        assertEquals(ApiFailure.Closed, result.failure, "close 後の取得が例外で返っている")
-        assertFalse(ApiFailure.Closed.canRetry, "閉じた後の再試行を勧めている")
+    @Test
+    fun a_body_is_sent_as_json() = runTest {
+        var sent: String? = null
+        val engine = MockEngine { request ->
+            sent = (request.body as TextContent).text
+            respond(
+                content = """{"name":"probe"}""",
+                headers = headersOf("Content-Type", ContentType.Application.Json.toString()),
+            )
+        }
+
+        val result = ApiClient("https://example.test", httpClient(engine)).post<Probe, Probe>("/probe", Probe("sent"))
+
+        assertEquals("""{"name":"sent"}""", sent)
+        assertEquals(Probe("probe"), assertIs<ApiResult.Ok<Probe>>(result).value)
     }
 }

@@ -1,0 +1,134 @@
+openapi: 3.0.3
+info:
+  title: DummyJSON
+  version: "1.0"
+servers:
+  - url: https://dummyjson.com
+paths:
+  /auth/login:
+    post:
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthTokens"
+        "400":
+          description: Invalid credentials
+  /auth/refresh:
+    post:
+      operationId: refresh
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthTokens"
+        "403":
+          description: Invalid refresh token
+  /auth/products:
+    get:
+      operationId: listProducts
+      security:
+        - bearer: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: skip
+          in: query
+          schema:
+            type: integer
+        - name: select
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductList"
+        "401":
+          description: Invalid or expired token
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+  schemas:
+    LoginRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    RefreshRequest:
+      type: object
+      required:
+        - refreshToken
+      properties:
+        refreshToken:
+          type: string
+    AuthTokens:
+      type: object
+      required:
+        - accessToken
+        - refreshToken
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+    ProductList:
+      type: object
+      required:
+        - products
+        - total
+        - skip
+        - limit
+      properties:
+        products:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductSummary"
+        total:
+          type: integer
+        skip:
+          type: integer
+        limit:
+          type: integer
+    ProductSummary:
+      type: object
+      required:
+        - id
+        - title
+        - thumbnail
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        thumbnail:
+          type: string

@@ -1,24 +1,24 @@
-package com.yossibank.shared.pokemon
+package com.yossibank.shared.product
 
 import com.yossibank.shared.core.ApiFailure
 
-sealed interface PokemonListResult {
+sealed interface ProductListResult {
     data class Loaded(
-        val pokemon: List<PokemonEntry>,
+        val products: List<ProductEntry>,
         val hasMore: Boolean,
         val total: Int,
-    ) : PokemonListResult
+    ) : ProductListResult
 
     data class Degraded(
-        val pokemon: List<PokemonEntry>,
+        val products: List<ProductEntry>,
         val hasMore: Boolean,
         val total: Int,
         val failure: ApiFailure,
-    ) : PokemonListResult
+    ) : ProductListResult
 
     data class Failed(
         val failure: ApiFailure,
-    ) : PokemonListResult
+    ) : ProductListResult
 
-    data object Stale : PokemonListResult
+    data object Stale : ProductListResult
 }
