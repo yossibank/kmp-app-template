@@ -38,7 +38,14 @@ jobs:
       - name: Compare with the base
         id: diff
         run: |
-          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ] || ! git diff --quiet HEAD^1 HEAD -- shared/api gradle/libs.versions.toml; then
+          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ] || ! git diff --quiet HEAD^1 HEAD -- \
+            shared/api \
+            shared/build.gradle.kts \
+            build.gradle.kts \
+            settings.gradle.kts \
+            gradle.properties \
+            gradle/libs.versions.toml \
+            Package.swift; then
             echo "apps=true" >> "$GITHUB_OUTPUT"
           else
             echo "apps=false" >> "$GITHUB_OUTPUT"
@@ -115,6 +122,10 @@ jobs:
         with:
           repository: ${{ github.repository_owner }}/android-app-template
           path: android
+
+      - name: Check the versions brought into the app
+        working-directory: kmp
+        run: sh scripts/check-app-versions.sh ../android
 
       - name: Set up JDK
         uses: actions/setup-java@v6
