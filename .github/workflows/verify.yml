@@ -26,8 +26,30 @@ env:
   DEVELOPER_DIR: /Applications/Xcode.app
 
 jobs:
+  changes:
+    name: Detect changes the apps can see
+    runs-on: ubuntu-latest
+    outputs:
+      apps: ${{ steps.diff.outputs.apps }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+
+      - name: Compare with the base
+        id: diff
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ] || ! git diff --quiet HEAD^1 HEAD -- shared/api gradle/libs.versions.toml; then
+            echo "apps=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "apps=false" >> "$GITHUB_OUTPUT"
+          fi
+
   verify:
     name: Build and test
+    needs: changes
     runs-on: xcode-27
     timeout-minutes: 60
 
@@ -57,3 +79,57 @@ jobs:
 
       - name: Verify
         run: make verify
+
+      - name: Checkout the iOS app
+        if: needs.changes.outputs.apps == 'true'
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ github.repository_owner }}/ios-app-template
+          path: apps/ios
+
+      - name: Compile the iOS app against this build
+        if: needs.changes.outputs.apps == 'true'
+        working-directory: apps/ios
+        env:
+          SHARED_DIR: ${{ github.workspace }}
+        run: >-
+          xcodebuild build
+          -workspace AppTemplate.xcworkspace
+          -scheme SharedCore
+          -destination 'generic/platform=iOS Simulator'
+          ARCHS=arm64
+          SWIFT_SUPPRESS_WARNINGS=NO
+          SWIFT_TREAT_WARNINGS_AS_ERRORS=YES
+
+  android-app:
+    name: Compile the Android app
+    needs: changes
+    if: needs.changes.outputs.apps == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          path: kmp
+
+      - name: Checkout the Android app
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ github.repository_owner }}/android-app-template
+          path: android
+
+      - name: Set up JDK
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Compile
+        working-directory: android
+        env:
+          SHARED_DIR: ${{ github.workspace }}/kmp
+        run: ./gradlew compileDebugKotlin
