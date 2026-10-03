@@ -125,6 +125,4 @@ echo "✅ ${TAG} をリリースしました"
 echo "   asset    : ${ASSET_URL}"
 echo "   checksum : ${CHECKSUM}"
 echo
-echo "次にやること:"
-echo "  ios-app-template     : SPM の参照を ${TAG} に更新"
-echo "  android-app-template : libs.versions.toml の shared を ${VERSION} に更新"
+echo "アプリ側の PR は Release ワークフローが開きます。手元から開くとき: scripts/open-app-prs.sh ${VERSION}"
