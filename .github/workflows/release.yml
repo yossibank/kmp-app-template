@@ -12,6 +12,10 @@ permissions:
   contents: write
   packages: write
 
+concurrency:
+  group: release
+  cancel-in-progress: false
+
 env:
   DEVELOPER_DIR: /Applications/Xcode.app
 

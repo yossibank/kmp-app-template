@@ -1,0 +1,143 @@
+public final class com/yossibank/shared/artwork/ArtworkTint {
+	public static final field Companion Lcom/yossibank/shared/artwork/ArtworkTint$Companion;
+	public fun <init> (DDD)V
+	public final fun component1 ()D
+	public final fun component2 ()D
+	public final fun component3 ()D
+	public final fun copy (DDD)Lcom/yossibank/shared/artwork/ArtworkTint;
+	public static synthetic fun copy$default (Lcom/yossibank/shared/artwork/ArtworkTint;DDDILjava/lang/Object;)Lcom/yossibank/shared/artwork/ArtworkTint;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBrightness ()D
+	public final fun getHue ()D
+	public final fun getSaturation ()D
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/yossibank/shared/artwork/ArtworkTint$Companion {
+	public final fun of ([I)Lcom/yossibank/shared/artwork/ArtworkTint;
+}
+
+public abstract interface class com/yossibank/shared/core/ApiFailure {
+	public abstract fun getCanRetry ()Z
+}
+
+public final class com/yossibank/shared/core/ApiFailure$Closed : com/yossibank/shared/core/ApiFailure {
+	public static final field INSTANCE Lcom/yossibank/shared/core/ApiFailure$Closed;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getCanRetry ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/yossibank/shared/core/ApiFailure$Offline : com/yossibank/shared/core/ApiFailure {
+	public static final field INSTANCE Lcom/yossibank/shared/core/ApiFailure$Offline;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getCanRetry ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/yossibank/shared/core/ApiFailure$Server : com/yossibank/shared/core/ApiFailure {
+	public fun <init> (I)V
+	public final fun component1 ()I
+	public final fun copy (I)Lcom/yossibank/shared/core/ApiFailure$Server;
+	public static synthetic fun copy$default (Lcom/yossibank/shared/core/ApiFailure$Server;IILjava/lang/Object;)Lcom/yossibank/shared/core/ApiFailure$Server;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getCanRetry ()Z
+	public final fun getStatusCode ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/yossibank/shared/core/ApiFailure$Timeout : com/yossibank/shared/core/ApiFailure {
+	public static final field INSTANCE Lcom/yossibank/shared/core/ApiFailure$Timeout;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getCanRetry ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/yossibank/shared/core/ApiFailure$Unreadable : com/yossibank/shared/core/ApiFailure {
+	public static final field INSTANCE Lcom/yossibank/shared/core/ApiFailure$Unreadable;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getCanRetry ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/yossibank/shared/pokemon/PokemonEntry {
+	public fun <init> (ILjava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()I
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun copy (ILjava/lang/String;Ljava/lang/String;)Lcom/yossibank/shared/pokemon/PokemonEntry;
+	public static synthetic fun copy$default (Lcom/yossibank/shared/pokemon/PokemonEntry;ILjava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lcom/yossibank/shared/pokemon/PokemonEntry;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDisplayName ()Ljava/lang/String;
+	public final fun getId ()I
+	public final fun getImageUrl ()Ljava/lang/String;
+	public final fun getName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class com/yossibank/shared/pokemon/PokemonListResult {
+}
+
+public final class com/yossibank/shared/pokemon/PokemonListResult$Degraded : com/yossibank/shared/pokemon/PokemonListResult {
+	public fun <init> (Ljava/util/List;ZILcom/yossibank/shared/core/ApiFailure;)V
+	public final fun component1 ()Ljava/util/List;
+	public final fun component2 ()Z
+	public final fun component3 ()I
+	public final fun component4 ()Lcom/yossibank/shared/core/ApiFailure;
+	public final fun copy (Ljava/util/List;ZILcom/yossibank/shared/core/ApiFailure;)Lcom/yossibank/shared/pokemon/PokemonListResult$Degraded;
+	public static synthetic fun copy$default (Lcom/yossibank/shared/pokemon/PokemonListResult$Degraded;Ljava/util/List;ZILcom/yossibank/shared/core/ApiFailure;ILjava/lang/Object;)Lcom/yossibank/shared/pokemon/PokemonListResult$Degraded;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getFailure ()Lcom/yossibank/shared/core/ApiFailure;
+	public final fun getHasMore ()Z
+	public final fun getPokemon ()Ljava/util/List;
+	public final fun getTotal ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/yossibank/shared/pokemon/PokemonListResult$Failed : com/yossibank/shared/pokemon/PokemonListResult {
+	public fun <init> (Lcom/yossibank/shared/core/ApiFailure;)V
+	public final fun component1 ()Lcom/yossibank/shared/core/ApiFailure;
+	public final fun copy (Lcom/yossibank/shared/core/ApiFailure;)Lcom/yossibank/shared/pokemon/PokemonListResult$Failed;
+	public static synthetic fun copy$default (Lcom/yossibank/shared/pokemon/PokemonListResult$Failed;Lcom/yossibank/shared/core/ApiFailure;ILjava/lang/Object;)Lcom/yossibank/shared/pokemon/PokemonListResult$Failed;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getFailure ()Lcom/yossibank/shared/core/ApiFailure;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/yossibank/shared/pokemon/PokemonListResult$Loaded : com/yossibank/shared/pokemon/PokemonListResult {
+	public fun <init> (Ljava/util/List;ZI)V
+	public final fun component1 ()Ljava/util/List;
+	public final fun component2 ()Z
+	public final fun component3 ()I
+	public final fun copy (Ljava/util/List;ZI)Lcom/yossibank/shared/pokemon/PokemonListResult$Loaded;
+	public static synthetic fun copy$default (Lcom/yossibank/shared/pokemon/PokemonListResult$Loaded;Ljava/util/List;ZIILjava/lang/Object;)Lcom/yossibank/shared/pokemon/PokemonListResult$Loaded;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getHasMore ()Z
+	public final fun getPokemon ()Ljava/util/List;
+	public final fun getTotal ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/yossibank/shared/pokemon/PokemonListResult$Stale : com/yossibank/shared/pokemon/PokemonListResult {
+	public static final field INSTANCE Lcom/yossibank/shared/pokemon/PokemonListResult$Stale;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/yossibank/shared/pokemon/PokemonPager {
+	public final fun close ()V
+	public final fun loadNext (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun reload (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+

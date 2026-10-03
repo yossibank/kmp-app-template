@@ -1,14 +1,17 @@
 package com.yossibank.shared.core
 
 import io.ktor.client.engine.mock.MockEngine
+import io.ktor.client.engine.mock.MockEngineConfig
 import io.ktor.client.engine.mock.respond
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.Serializable
 import kotlin.test.Test
@@ -27,21 +30,25 @@ private fun client(
     status: HttpStatusCode = HttpStatusCode.OK,
     delayMillis: Long = 0,
     unreachable: Boolean = false,
+    dispatcher: CoroutineDispatcher? = null,
 ): ApiClient {
-    val engine = MockEngine {
-        delay(delayMillis)
+    val config = MockEngineConfig().apply {
+        dispatcher?.let { this.dispatcher = it }
+        addHandler {
+            delay(delayMillis)
 
-        if (unreachable) {
-            throw IllegalStateException("connection refused")
+            if (unreachable) {
+                throw IllegalStateException("connection refused")
+            }
+
+            respond(
+                content = body,
+                status = status,
+                headers = headersOf("Content-Type", ContentType.Application.Json.toString()),
+            )
         }
-
-        respond(
-            content = body,
-            status = status,
-            headers = headersOf("Content-Type", ContentType.Application.Json.toString()),
-        )
     }
-    return ApiClient(baseUrl = "https://example.test", engine = engine)
+    return ApiClient(baseUrl = "https://example.test", engine = MockEngine(config))
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -64,7 +71,10 @@ class ApiClientTest {
     @Test
     fun a_slow_server_is_told_apart_from_one_it_cannot_reach() = runTest {
         val result = assertIs<ApiResult.Err>(
-            client(delayMillis = ApiClient.REQUEST_TIMEOUT_MILLIS * 2).get<Probe>("/probe"),
+            client(
+                delayMillis = ApiClient.REQUEST_TIMEOUT_MILLIS * 2,
+                dispatcher = StandardTestDispatcher(testScheduler),
+            ).get<Probe>("/probe"),
         )
 
         assertEquals(ApiFailure.Timeout, result.failure, "遅いだけのサーバーがオフライン扱いになっている")
