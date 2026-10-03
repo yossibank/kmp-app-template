@@ -54,7 +54,7 @@ flowchart LR
 
 ## 使い方
 
-変更したら `make verify` を通します。
+変更したら `make verify` を通します。既存のアプリに組み込む手順は [docs/integration.md](docs/integration.md) にあります。
 
 > [!NOTE]
 > 公開 API は `shared/api/` にダンプしてあり、差分があると `make verify` が落ちます。API を変えたら `make api` で更新します。
