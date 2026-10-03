@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+set -Eeuo pipefail
 
 MODULE="shared"
 FRAMEWORK="Shared"
@@ -14,36 +14,77 @@ TAG="v${VERSION}"
 ZIP="${MODULE}/build/spm/${FRAMEWORK}.xcframework.zip"
 CHECKSUM_FILE="${MODULE}/build/spm/checksum.txt"
 
-if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-    echo "version は semver で指定してください（例: 0.3.0）: $VERSION" >&2
-    exit 1
-fi
+check_can_release() {
+    if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        echo "version は semver で指定してください（例: 0.3.0）: $VERSION" >&2
+        exit 1
+    fi
 
-if git rev-parse "$TAG" >/dev/null 2>&1 || gh release view "$TAG" >/dev/null 2>&1; then
-    echo "${TAG} は既に存在します。バージョンを上げてください。" >&2
-    exit 1
-fi
+    if git rev-parse "$TAG" >/dev/null 2>&1 || gh release view "$TAG" >/dev/null 2>&1; then
+        echo "${TAG} は既に存在します。バージョンを上げてください。" >&2
+        exit 1
+    fi
 
-if [ -n "$(git status --porcelain)" ]; then
-    echo "コミットされていない変更があります。先に整理してください。" >&2
-    exit 1
-fi
+    if [ -n "$(git status --porcelain)" ]; then
+        echo "コミットされていない変更があります。先に整理してください。" >&2
+        exit 1
+    fi
 
-BRANCH="$(git rev-parse --abbrev-ref HEAD)"
-if [ "$BRANCH" != "main" ]; then
-    echo "main 以外からはリリースしません: ${BRANCH}" >&2
-    exit 1
-fi
-
-make verify
+    if [ "$BRANCH" != "main" ]; then
+        echo "main 以外からはリリースしません: ${BRANCH}" >&2
+        exit 1
+    fi
+}
 
 codeartifact() { sed -n "s/^codeArtifact\.$1=//p" gradle.properties; }
 
-export CODEARTIFACT_AUTH_TOKEN="${CODEARTIFACT_AUTH_TOKEN:-$(aws codeartifact get-authorization-token \
-    --domain "$(codeartifact domain)" --domain-owner "$(codeartifact owner)" --region "$(codeartifact region)" \
-    --query authorizationToken --output text)}"
+login_codeartifact() {
+    export CODEARTIFACT_AUTH_TOKEN="${CODEARTIFACT_AUTH_TOKEN:-$(aws codeartifact get-authorization-token \
+        --domain "$(codeartifact domain)" --domain-owner "$(codeartifact owner)" --region "$(codeartifact region)" \
+        --query authorizationToken --output text)}"
+}
 
-STAGE="edited"
+build_xcframework() {
+    ./gradlew ":${MODULE}:packageXCFramework"
+    [ -f "$ZIP" ] || { echo "zip が生成されていません: $ZIP" >&2; exit 1; }
+    CHECKSUM="$(cat "$CHECKSUM_FILE")"
+}
+
+upload_draft() {
+    gh release create "$TAG" --draft --title "$TAG" --generate-notes >/dev/null
+    gh release upload "$TAG" "$ZIP" >/dev/null
+
+    ASSET_URL=""
+    for _ in $(seq 1 10); do
+        ASSET_URL="$(gh release view "$TAG" --json assets --jq '.assets[0].apiUrl // empty')"
+        [ -n "$ASSET_URL" ] && break
+        sleep 1
+    done
+    [ -n "$ASSET_URL" ] || { echo "アセットの API URL を取得できませんでした" >&2; exit 1; }
+
+    ASSET_URL="${ASSET_URL}.zip"
+}
+
+point_package_at_asset() {
+    sed -i '' -E \
+        -e "s|^( *url: )\".*\",$|\\1\"${ASSET_URL}\",|" \
+        -e "s|^( *checksum: )\".*\"$|\\1\"${CHECKSUM}\"|" \
+        Package.swift
+    grep -qF "url: \"${ASSET_URL}\"," Package.swift && grep -qF "checksum: \"${CHECKSUM}\"" Package.swift ||
+        { echo "Package.swift の url / checksum を書き換えられませんでした" >&2; false; }
+}
+
+commit_and_tag() {
+    git switch -q --detach
+    git add Package.swift
+    git commit -q -m "Release ${TAG}"
+    git tag -a "$TAG" -m "${FRAMEWORK} ${VERSION}"
+}
+
+publish() {
+    ./gradlew ":${MODULE}:publishAndroidPublicationToCodeArtifactRepository" -PreleaseVersion="${VERSION}"
+    gh release edit "$TAG" --tag "$TAG" --draft=false >/dev/null
+}
 
 undo_edit() { git checkout -- Package.swift >/dev/null 2>&1 || true; }
 undo_draft() { gh release delete "$TAG" --yes >/dev/null 2>&1 || true; }
@@ -75,46 +116,30 @@ on_error() {
             ;;
     esac
 }
+
+BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+
+check_can_release
+make verify
+login_codeartifact
+
+STAGE="edited"
 trap on_error ERR
 
 echo "▶ ${TAG} のリリースを開始します"
 
-./gradlew ":${MODULE}:packageXCFramework"
-[ -f "$ZIP" ] || { echo "zip が生成されていません: $ZIP" >&2; exit 1; }
-CHECKSUM="$(cat "$CHECKSUM_FILE")"
+build_xcframework
 
 STAGE="draft"
-gh release create "$TAG" --draft --title "$TAG" --generate-notes >/dev/null
-gh release upload "$TAG" "$ZIP" >/dev/null
-
-ASSET_URL=""
-for _ in $(seq 1 10); do
-    ASSET_URL="$(gh release view "$TAG" --json assets --jq '.assets[0].apiUrl // empty')"
-    [ -n "$ASSET_URL" ] && break
-    sleep 1
-done
-[ -n "$ASSET_URL" ] || { echo "アセットの API URL を取得できませんでした" >&2; exit 1; }
-
-ASSET_URL="${ASSET_URL}.zip"
-
-sed -i '' -E \
-    -e "s|^( *url: )\".*\",$|\\1\"${ASSET_URL}\",|" \
-    -e "s|^( *checksum: )\".*\"$|\\1\"${CHECKSUM}\"|" \
-    Package.swift
-grep -qF "url: \"${ASSET_URL}\"," Package.swift && grep -qF "checksum: \"${CHECKSUM}\"" Package.swift ||
-    { echo "Package.swift の url / checksum を書き換えられませんでした" >&2; false; }
+upload_draft
+point_package_at_asset
 
 STAGE="committed"
-git switch -q --detach
-git add Package.swift
-git commit -q -m "Release ${TAG}"
-git tag -a "$TAG" -m "${FRAMEWORK} ${VERSION}"
+commit_and_tag
 
 STAGE="pushed"
 git push -q origin "$TAG"
-
-./gradlew ":${MODULE}:publishAndroidPublicationToCodeArtifactRepository" -PreleaseVersion="${VERSION}"
-gh release edit "$TAG" --tag "$TAG" --draft=false >/dev/null
+publish
 
 trap - ERR
 

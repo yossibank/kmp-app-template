@@ -1,35 +1,42 @@
-.PHONY: verify lint format api build build-android build-ios publish-local publish test clean
+GRADLE := ./gradlew
+
+.PHONY: verify api lint format test build build-android build-ios publish-local publish clean
 
 verify:
-	./gradlew :shared:ktlintCheck :shared:checkKotlinAbi :shared:assembleAndroidMain :shared:assembleSharedDebugXCFramework :shared:allTests
+	$(GRADLE) \
+		:shared:ktlintCheck \
+		:shared:checkKotlinAbi \
+		:shared:assembleAndroidMain \
+		:shared:assembleSharedDebugXCFramework \
+		:shared:allTests
 	@sh scripts/check-ios-api.sh
 
+api:
+	$(GRADLE) :shared:updateKotlinAbi
+
 lint:
-	./gradlew :shared:ktlintCheck
+	$(GRADLE) :shared:ktlintCheck
 
 format:
-	./gradlew :shared:ktlintFormat
+	$(GRADLE) :shared:ktlintFormat
 
-api:
-	./gradlew :shared:updateKotlinAbi
+test:
+	$(GRADLE) :shared:allTests
 
 build: build-android build-ios
 
 build-android:
-	./gradlew :shared:assembleAndroidMain
+	$(GRADLE) :shared:assembleAndroidMain
 
 build-ios:
-	./gradlew :shared:assembleSharedDebugXCFramework
+	$(GRADLE) :shared:assembleSharedDebugXCFramework
 
 publish-local:
-	./gradlew :shared:publishToMavenLocal
+	$(GRADLE) :shared:publishToMavenLocal
 
 publish:
 	$(if $(VERSION),,$(error VERSION を指定してください（例: make publish VERSION=0.3.0）))
-	./gradlew :shared:publishAndroidPublicationToCodeArtifactRepository -PreleaseVersion=$(VERSION)
-
-test:
-	./gradlew :shared:allTests
+	$(GRADLE) :shared:publishAndroidPublicationToCodeArtifactRepository -PreleaseVersion=$(VERSION)
 
 clean:
-	./gradlew clean
+	$(GRADLE) clean
