@@ -4,7 +4,7 @@ import PackageDescription
 let shared: Target = if Context.environment["SHARED_DIR"] != nil {
     .binaryTarget(
         name: "Shared",
-        path: "shared/build/XCFrameworks/release/Shared.xcframework"
+        path: "shared/build/XCFrameworks/debug/Shared.xcframework"
     )
 } else {
     .binaryTarget(

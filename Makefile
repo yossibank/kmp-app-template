@@ -1,7 +1,7 @@
 .PHONY: verify lint format api build build-android build-ios publish-local publish test clean
 
 verify:
-	./gradlew :shared:ktlintCheck :shared:checkKotlinAbi :shared:assembleAndroidMain :shared:assembleSharedReleaseXCFramework :shared:allTests
+	./gradlew :shared:ktlintCheck :shared:checkKotlinAbi :shared:assembleAndroidMain :shared:assembleSharedDebugXCFramework :shared:allTests
 	@sh scripts/check-ios-api.sh
 
 lint:
@@ -19,7 +19,7 @@ build-android:
 	./gradlew :shared:assembleAndroidMain
 
 build-ios:
-	./gradlew :shared:assembleSharedReleaseXCFramework
+	./gradlew :shared:assembleSharedDebugXCFramework
 
 publish-local:
 	./gradlew :shared:publishToMavenLocal
