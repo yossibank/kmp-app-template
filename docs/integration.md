@@ -20,7 +20,7 @@ flowchart LR
 | 項目 | 決まる場所 | 影響 |
 | --- | --- | --- |
 | Kotlin・kotlinx・Ktor | `gradle/libs.versions.toml` | アプリに持ち込まれ、そこでの下限になる |
-| OkHttp | Ktor の OkHttp エンジン | Ktor が要求する版まで引き上げられる |
+| OkHttp | Ktor の OkHttp エンジン | Ktor が要求するバージョンまで引き上げられる |
 | minSdk | `shared/build.gradle.kts` | これより低いアプリには入らない |
 | 最低 iOS | Kotlin/Native の既定 | XCFramework の `MinimumOSVersion` より低いアプリには入らない |
 | Xcode | `Package.swift` の `swift-tools-version` | これより古い Xcode では解決できない |
@@ -65,7 +65,7 @@ dependencyResolutionManagement {
 }
 ```
 
-依存は `com.yossibank:shared-android:<版>` です。
+依存は `com.yossibank:shared-android:<バージョン>` です。
 
 ### 2. トークンを渡す
 
@@ -92,7 +92,7 @@ class App : Application() {
 ### 1. パッケージを足す
 
 ```swift
-.package(url: "https://github.com/<オーナー>/kmp-app-template.git", exact: "<版>")
+.package(url: "https://github.com/<オーナー>/kmp-app-template.git", exact: "<バージョン>")
 ```
 
 ターゲットの依存は `.product(name: "Shared", package: "kmp-app-template")` です。
