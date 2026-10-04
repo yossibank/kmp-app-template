@@ -85,6 +85,84 @@ public final class com/yossibank/shared/core/ApiFailure$Unreadable : com/yossiba
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class com/yossibank/shared/product/CatalogEntry {
+	public fun <init> (ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;D)V
+	public final fun component1 ()I
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()D
+	public final fun copy (ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;D)Lcom/yossibank/shared/product/CatalogEntry;
+	public static synthetic fun copy$default (Lcom/yossibank/shared/product/CatalogEntry;ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;DILjava/lang/Object;)Lcom/yossibank/shared/product/CatalogEntry;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBrand ()Ljava/lang/String;
+	public final fun getId ()I
+	public final fun getPrice ()D
+	public final fun getThumbnailUrl ()Ljava/lang/String;
+	public final fun getTitle ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/yossibank/shared/product/CatalogPager {
+	public final fun getPageSize ()I
+	public final fun loadNext (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun reload (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class com/yossibank/shared/product/CatalogResult {
+}
+
+public final class com/yossibank/shared/product/CatalogResult$Degraded : com/yossibank/shared/product/CatalogResult {
+	public fun <init> (Ljava/util/List;ZILcom/yossibank/shared/core/ApiFailure;)V
+	public final fun component1 ()Ljava/util/List;
+	public final fun component2 ()Z
+	public final fun component3 ()I
+	public final fun component4 ()Lcom/yossibank/shared/core/ApiFailure;
+	public final fun copy (Ljava/util/List;ZILcom/yossibank/shared/core/ApiFailure;)Lcom/yossibank/shared/product/CatalogResult$Degraded;
+	public static synthetic fun copy$default (Lcom/yossibank/shared/product/CatalogResult$Degraded;Ljava/util/List;ZILcom/yossibank/shared/core/ApiFailure;ILjava/lang/Object;)Lcom/yossibank/shared/product/CatalogResult$Degraded;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getEntries ()Ljava/util/List;
+	public final fun getFailure ()Lcom/yossibank/shared/core/ApiFailure;
+	public final fun getHasMore ()Z
+	public final fun getTotal ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/yossibank/shared/product/CatalogResult$Failed : com/yossibank/shared/product/CatalogResult {
+	public fun <init> (Lcom/yossibank/shared/core/ApiFailure;)V
+	public final fun component1 ()Lcom/yossibank/shared/core/ApiFailure;
+	public final fun copy (Lcom/yossibank/shared/core/ApiFailure;)Lcom/yossibank/shared/product/CatalogResult$Failed;
+	public static synthetic fun copy$default (Lcom/yossibank/shared/product/CatalogResult$Failed;Lcom/yossibank/shared/core/ApiFailure;ILjava/lang/Object;)Lcom/yossibank/shared/product/CatalogResult$Failed;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getFailure ()Lcom/yossibank/shared/core/ApiFailure;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/yossibank/shared/product/CatalogResult$Loaded : com/yossibank/shared/product/CatalogResult {
+	public fun <init> (Ljava/util/List;ZI)V
+	public final fun component1 ()Ljava/util/List;
+	public final fun component2 ()Z
+	public final fun component3 ()I
+	public final fun copy (Ljava/util/List;ZI)Lcom/yossibank/shared/product/CatalogResult$Loaded;
+	public static synthetic fun copy$default (Lcom/yossibank/shared/product/CatalogResult$Loaded;Ljava/util/List;ZIILjava/lang/Object;)Lcom/yossibank/shared/product/CatalogResult$Loaded;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getEntries ()Ljava/util/List;
+	public final fun getHasMore ()Z
+	public final fun getTotal ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/yossibank/shared/product/CatalogResult$Stale : com/yossibank/shared/product/CatalogResult {
+	public static final field INSTANCE Lcom/yossibank/shared/product/CatalogResult$Stale;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class com/yossibank/shared/product/ProductEntry {
 	public fun <init> (ILjava/lang/String;Ljava/lang/String;)V
 	public final fun component1 ()I

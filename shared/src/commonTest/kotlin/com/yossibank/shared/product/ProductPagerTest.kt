@@ -26,7 +26,7 @@ private class Catalog(
         server.productsBody = { skip, limit ->
             skips += skip
             val ids = (skip until minOf(skip + limit, total)).toList()
-            val products = ids.joinToString(",") { """{"id":$it,"title":"p$it","thumbnail":"https://example.test/$it.webp"}""" }
+            val products = ids.joinToString(",") { """{"id":$it,"title":"p$it","thumbnail":"https://example.test/$it.webp","price":1.5}""" }
             """{"products":[$products],"total":$total,"skip":$skip,"limit":$limit}"""
         }
         failFrom?.let { from ->
