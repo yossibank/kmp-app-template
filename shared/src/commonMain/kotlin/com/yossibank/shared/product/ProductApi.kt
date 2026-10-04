@@ -24,7 +24,7 @@ internal class ProductApi(
         .get<ProductList>("/auth/products") {
             parameter("limit", limit)
             parameter("skip", skip)
-            parameter("select", "title,thumbnail")
+            parameter("select", "title,thumbnail,brand,price")
         }.map {
             ProductPage(products = it.products, hasMore = it.skip + it.products.size < it.total, total = it.total)
         }

@@ -89,6 +89,68 @@ sealed interface com.yossibank.shared.core/ApiFailure { // com.yossibank.shared.
     }
 }
 
+sealed interface com.yossibank.shared.product/CatalogResult { // com.yossibank.shared.product/CatalogResult|null[0]
+    final class Degraded : com.yossibank.shared.product/CatalogResult { // com.yossibank.shared.product/CatalogResult.Degraded|null[0]
+        constructor <init>(kotlin.collections/List<com.yossibank.shared.product/CatalogEntry>, kotlin/Boolean, kotlin/Int, com.yossibank.shared.core/ApiFailure) // com.yossibank.shared.product/CatalogResult.Degraded.<init>|<init>(kotlin.collections.List<com.yossibank.shared.product.CatalogEntry>;kotlin.Boolean;kotlin.Int;com.yossibank.shared.core.ApiFailure){}[0]
+
+        final val entries // com.yossibank.shared.product/CatalogResult.Degraded.entries|{}entries[0]
+            final fun <get-entries>(): kotlin.collections/List<com.yossibank.shared.product/CatalogEntry> // com.yossibank.shared.product/CatalogResult.Degraded.entries.<get-entries>|<get-entries>(){}[0]
+        final val failure // com.yossibank.shared.product/CatalogResult.Degraded.failure|{}failure[0]
+            final fun <get-failure>(): com.yossibank.shared.core/ApiFailure // com.yossibank.shared.product/CatalogResult.Degraded.failure.<get-failure>|<get-failure>(){}[0]
+        final val hasMore // com.yossibank.shared.product/CatalogResult.Degraded.hasMore|{}hasMore[0]
+            final fun <get-hasMore>(): kotlin/Boolean // com.yossibank.shared.product/CatalogResult.Degraded.hasMore.<get-hasMore>|<get-hasMore>(){}[0]
+        final val total // com.yossibank.shared.product/CatalogResult.Degraded.total|{}total[0]
+            final fun <get-total>(): kotlin/Int // com.yossibank.shared.product/CatalogResult.Degraded.total.<get-total>|<get-total>(){}[0]
+
+        final fun component1(): kotlin.collections/List<com.yossibank.shared.product/CatalogEntry> // com.yossibank.shared.product/CatalogResult.Degraded.component1|component1(){}[0]
+        final fun component2(): kotlin/Boolean // com.yossibank.shared.product/CatalogResult.Degraded.component2|component2(){}[0]
+        final fun component3(): kotlin/Int // com.yossibank.shared.product/CatalogResult.Degraded.component3|component3(){}[0]
+        final fun component4(): com.yossibank.shared.core/ApiFailure // com.yossibank.shared.product/CatalogResult.Degraded.component4|component4(){}[0]
+        final fun copy(kotlin.collections/List<com.yossibank.shared.product/CatalogEntry> = ..., kotlin/Boolean = ..., kotlin/Int = ..., com.yossibank.shared.core/ApiFailure = ...): com.yossibank.shared.product/CatalogResult.Degraded // com.yossibank.shared.product/CatalogResult.Degraded.copy|copy(kotlin.collections.List<com.yossibank.shared.product.CatalogEntry>;kotlin.Boolean;kotlin.Int;com.yossibank.shared.core.ApiFailure){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.yossibank.shared.product/CatalogResult.Degraded.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.yossibank.shared.product/CatalogResult.Degraded.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // com.yossibank.shared.product/CatalogResult.Degraded.toString|toString(){}[0]
+    }
+
+    final class Failed : com.yossibank.shared.product/CatalogResult { // com.yossibank.shared.product/CatalogResult.Failed|null[0]
+        constructor <init>(com.yossibank.shared.core/ApiFailure) // com.yossibank.shared.product/CatalogResult.Failed.<init>|<init>(com.yossibank.shared.core.ApiFailure){}[0]
+
+        final val failure // com.yossibank.shared.product/CatalogResult.Failed.failure|{}failure[0]
+            final fun <get-failure>(): com.yossibank.shared.core/ApiFailure // com.yossibank.shared.product/CatalogResult.Failed.failure.<get-failure>|<get-failure>(){}[0]
+
+        final fun component1(): com.yossibank.shared.core/ApiFailure // com.yossibank.shared.product/CatalogResult.Failed.component1|component1(){}[0]
+        final fun copy(com.yossibank.shared.core/ApiFailure = ...): com.yossibank.shared.product/CatalogResult.Failed // com.yossibank.shared.product/CatalogResult.Failed.copy|copy(com.yossibank.shared.core.ApiFailure){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.yossibank.shared.product/CatalogResult.Failed.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.yossibank.shared.product/CatalogResult.Failed.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // com.yossibank.shared.product/CatalogResult.Failed.toString|toString(){}[0]
+    }
+
+    final class Loaded : com.yossibank.shared.product/CatalogResult { // com.yossibank.shared.product/CatalogResult.Loaded|null[0]
+        constructor <init>(kotlin.collections/List<com.yossibank.shared.product/CatalogEntry>, kotlin/Boolean, kotlin/Int) // com.yossibank.shared.product/CatalogResult.Loaded.<init>|<init>(kotlin.collections.List<com.yossibank.shared.product.CatalogEntry>;kotlin.Boolean;kotlin.Int){}[0]
+
+        final val entries // com.yossibank.shared.product/CatalogResult.Loaded.entries|{}entries[0]
+            final fun <get-entries>(): kotlin.collections/List<com.yossibank.shared.product/CatalogEntry> // com.yossibank.shared.product/CatalogResult.Loaded.entries.<get-entries>|<get-entries>(){}[0]
+        final val hasMore // com.yossibank.shared.product/CatalogResult.Loaded.hasMore|{}hasMore[0]
+            final fun <get-hasMore>(): kotlin/Boolean // com.yossibank.shared.product/CatalogResult.Loaded.hasMore.<get-hasMore>|<get-hasMore>(){}[0]
+        final val total // com.yossibank.shared.product/CatalogResult.Loaded.total|{}total[0]
+            final fun <get-total>(): kotlin/Int // com.yossibank.shared.product/CatalogResult.Loaded.total.<get-total>|<get-total>(){}[0]
+
+        final fun component1(): kotlin.collections/List<com.yossibank.shared.product/CatalogEntry> // com.yossibank.shared.product/CatalogResult.Loaded.component1|component1(){}[0]
+        final fun component2(): kotlin/Boolean // com.yossibank.shared.product/CatalogResult.Loaded.component2|component2(){}[0]
+        final fun component3(): kotlin/Int // com.yossibank.shared.product/CatalogResult.Loaded.component3|component3(){}[0]
+        final fun copy(kotlin.collections/List<com.yossibank.shared.product/CatalogEntry> = ..., kotlin/Boolean = ..., kotlin/Int = ...): com.yossibank.shared.product/CatalogResult.Loaded // com.yossibank.shared.product/CatalogResult.Loaded.copy|copy(kotlin.collections.List<com.yossibank.shared.product.CatalogEntry>;kotlin.Boolean;kotlin.Int){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.yossibank.shared.product/CatalogResult.Loaded.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.yossibank.shared.product/CatalogResult.Loaded.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // com.yossibank.shared.product/CatalogResult.Loaded.toString|toString(){}[0]
+    }
+
+    final object Stale : com.yossibank.shared.product/CatalogResult { // com.yossibank.shared.product/CatalogResult.Stale|null[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.yossibank.shared.product/CatalogResult.Stale.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.yossibank.shared.product/CatalogResult.Stale.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // com.yossibank.shared.product/CatalogResult.Stale.toString|toString(){}[0]
+    }
+}
+
 sealed interface com.yossibank.shared.product/ProductListResult { // com.yossibank.shared.product/ProductListResult|null[0]
     final class Degraded : com.yossibank.shared.product/ProductListResult { // com.yossibank.shared.product/ProductListResult.Degraded|null[0]
         constructor <init>(kotlin.collections/List<com.yossibank.shared.product/ProductEntry>, kotlin/Boolean, kotlin/Int, com.yossibank.shared.core/ApiFailure) // com.yossibank.shared.product/ProductListResult.Degraded.<init>|<init>(kotlin.collections.List<com.yossibank.shared.product.ProductEntry>;kotlin.Boolean;kotlin.Int;com.yossibank.shared.core.ApiFailure){}[0]
@@ -149,6 +211,41 @@ sealed interface com.yossibank.shared.product/ProductListResult { // com.yossiba
         final fun hashCode(): kotlin/Int // com.yossibank.shared.product/ProductListResult.Stale.hashCode|hashCode(){}[0]
         final fun toString(): kotlin/String // com.yossibank.shared.product/ProductListResult.Stale.toString|toString(){}[0]
     }
+}
+
+final class com.yossibank.shared.product/CatalogEntry { // com.yossibank.shared.product/CatalogEntry|null[0]
+    constructor <init>(kotlin/Int, kotlin/String, kotlin/String, kotlin/String?, kotlin/Double) // com.yossibank.shared.product/CatalogEntry.<init>|<init>(kotlin.Int;kotlin.String;kotlin.String;kotlin.String?;kotlin.Double){}[0]
+
+    final val brand // com.yossibank.shared.product/CatalogEntry.brand|{}brand[0]
+        final fun <get-brand>(): kotlin/String? // com.yossibank.shared.product/CatalogEntry.brand.<get-brand>|<get-brand>(){}[0]
+    final val id // com.yossibank.shared.product/CatalogEntry.id|{}id[0]
+        final fun <get-id>(): kotlin/Int // com.yossibank.shared.product/CatalogEntry.id.<get-id>|<get-id>(){}[0]
+    final val price // com.yossibank.shared.product/CatalogEntry.price|{}price[0]
+        final fun <get-price>(): kotlin/Double // com.yossibank.shared.product/CatalogEntry.price.<get-price>|<get-price>(){}[0]
+    final val thumbnailUrl // com.yossibank.shared.product/CatalogEntry.thumbnailUrl|{}thumbnailUrl[0]
+        final fun <get-thumbnailUrl>(): kotlin/String // com.yossibank.shared.product/CatalogEntry.thumbnailUrl.<get-thumbnailUrl>|<get-thumbnailUrl>(){}[0]
+    final val title // com.yossibank.shared.product/CatalogEntry.title|{}title[0]
+        final fun <get-title>(): kotlin/String // com.yossibank.shared.product/CatalogEntry.title.<get-title>|<get-title>(){}[0]
+
+    final fun component1(): kotlin/Int // com.yossibank.shared.product/CatalogEntry.component1|component1(){}[0]
+    final fun component2(): kotlin/String // com.yossibank.shared.product/CatalogEntry.component2|component2(){}[0]
+    final fun component3(): kotlin/String // com.yossibank.shared.product/CatalogEntry.component3|component3(){}[0]
+    final fun component4(): kotlin/String? // com.yossibank.shared.product/CatalogEntry.component4|component4(){}[0]
+    final fun component5(): kotlin/Double // com.yossibank.shared.product/CatalogEntry.component5|component5(){}[0]
+    final fun copy(kotlin/Int = ..., kotlin/String = ..., kotlin/String = ..., kotlin/String? = ..., kotlin/Double = ...): com.yossibank.shared.product/CatalogEntry // com.yossibank.shared.product/CatalogEntry.copy|copy(kotlin.Int;kotlin.String;kotlin.String;kotlin.String?;kotlin.Double){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.yossibank.shared.product/CatalogEntry.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.yossibank.shared.product/CatalogEntry.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.yossibank.shared.product/CatalogEntry.toString|toString(){}[0]
+}
+
+final class com.yossibank.shared.product/CatalogPager { // com.yossibank.shared.product/CatalogPager|null[0]
+    constructor <init>() // com.yossibank.shared.product/CatalogPager.<init>|<init>(){}[0]
+
+    final val pageSize // com.yossibank.shared.product/CatalogPager.pageSize|{}pageSize[0]
+        final fun <get-pageSize>(): kotlin/Int // com.yossibank.shared.product/CatalogPager.pageSize.<get-pageSize>|<get-pageSize>(){}[0]
+
+    final suspend fun loadNext(): com.yossibank.shared.product/CatalogResult // com.yossibank.shared.product/CatalogPager.loadNext|loadNext(){}[0]
+    final suspend fun reload(): com.yossibank.shared.product/CatalogResult // com.yossibank.shared.product/CatalogPager.reload|reload(){}[0]
 }
 
 final class com.yossibank.shared.product/ProductEntry { // com.yossibank.shared.product/ProductEntry|null[0]

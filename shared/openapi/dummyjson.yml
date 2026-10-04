@@ -125,6 +125,7 @@ components:
         - id
         - title
         - thumbnail
+        - price
       properties:
         id:
           type: integer
@@ -132,3 +133,8 @@ components:
           type: string
         thumbnail:
           type: string
+        brand:
+          type: string
+        price:
+          type: number
+          format: double
