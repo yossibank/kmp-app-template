@@ -9,8 +9,8 @@ let shared: Target = if Context.environment["SHARED_DIR"] != nil {
 } else {
     .binaryTarget(
         name: "Shared",
-        url: "https://api.github.com/repos/yossibank/kmp-app-template/releases/assets/607384270.zip",
-        checksum: "2dbd107049536ee0dde96936bc580af0fd9abe87f9cf7932191aec410339b248"
+        url: "https://api.github.com/repos/yossibank/kmp-app-template/releases/assets/609116514.zip",
+        checksum: "cd8c1768f0df3c7f80cc0176ba5f3ed35a8e543aaa273dc32d887beb5a3f064e"
     )
 }
 
