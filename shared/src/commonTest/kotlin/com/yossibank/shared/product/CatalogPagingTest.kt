@@ -22,7 +22,7 @@ private class Catalog(
     fun pager(
         pageSize: Int,
         store: InMemoryTokenStore = InMemoryTokenStore(Tokens("access-1", "refresh-1")),
-    ): ProductPager {
+    ): CatalogPager {
         server.productsBody = { skip, limit ->
             skips += skip
             val ids = (skip until minOf(skip + limit, total)).toList()
@@ -34,18 +34,18 @@ private class Catalog(
             server.productsBody = { skip, limit -> if (skip >= from) error("unreachable") else body(skip, limit) }
         }
         val backend = server.backend(store)
-        return ProductPager(ProductApi { backend.api }, pageSize)
+        return CatalogPager(ProductApi { backend.api }, pageSize)
     }
 }
 
-class ProductPagerTest {
+class CatalogPagingTest {
     @Test
     fun a_page_becomes_entries() = runTest {
-        val loaded = assertIs<ProductListResult.Loaded>(Catalog(total = 2).pager(pageSize = 2).loadNext())
+        val loaded = assertIs<CatalogResult.Loaded>(Catalog(total = 2).pager(pageSize = 2).loadNext())
 
-        assertEquals(listOf(0, 1), loaded.products.map { it.id })
-        assertEquals(listOf("p0", "p1"), loaded.products.map { it.title })
-        assertEquals("https://example.test/0.webp", loaded.products.first().thumbnailUrl)
+        assertEquals(listOf(0, 1), loaded.entries.map { it.id })
+        assertEquals(listOf("p0", "p1"), loaded.entries.map { it.title })
+        assertEquals("https://example.test/0.webp", loaded.entries.first().thumbnailUrl)
         assertFalse(loaded.hasMore)
     }
 
@@ -54,11 +54,11 @@ class ProductPagerTest {
         val catalog = Catalog(total = 5)
         val pager = catalog.pager(pageSize = 2)
 
-        var loaded = assertIs<ProductListResult.Loaded>(pager.loadNext())
+        var loaded = assertIs<CatalogResult.Loaded>(pager.loadNext())
         repeat(2) { loaded = assertIs(pager.loadNext()) }
 
         assertEquals(listOf(0, 2, 4), catalog.skips)
-        assertEquals(listOf(0, 1, 2, 3, 4), loaded.products.map { it.id })
+        assertEquals(listOf(0, 1, 2, 3, 4), loaded.entries.map { it.id })
         assertFalse(loaded.hasMore, "最後のページの後も続きがあることになっている")
         assertEquals(5, loaded.total)
     }
@@ -70,9 +70,9 @@ class ProductPagerTest {
 
         pager.loadNext()
         pager.loadNext()
-        val reloaded = assertIs<ProductListResult.Loaded>(pager.reload())
+        val reloaded = assertIs<CatalogResult.Loaded>(pager.reload())
 
-        assertEquals(listOf(0, 1), reloaded.products.map { it.id }, "読み込んだ分が残っている")
+        assertEquals(listOf(0, 1), reloaded.entries.map { it.id }, "読み込んだ分が残っている")
         assertEquals(listOf(0, 2, 0), catalog.skips, "先頭から読み直していない")
     }
 
@@ -81,9 +81,9 @@ class ProductPagerTest {
         val pager = Catalog(total = 8, failFrom = 2).pager(pageSize = 2)
 
         pager.loadNext()
-        val degraded = assertIs<ProductListResult.Degraded>(pager.loadNext(), "一部の失敗が全体の失敗か成功に紛れている")
+        val degraded = assertIs<CatalogResult.Degraded>(pager.loadNext(), "一部の失敗が全体の失敗か成功に紛れている")
 
-        assertEquals(listOf(0, 1), degraded.products.map { it.id })
+        assertEquals(listOf(0, 1), degraded.entries.map { it.id })
         assertEquals(ApiFailure.Offline, degraded.failure)
     }
 
@@ -93,7 +93,7 @@ class ProductPagerTest {
         catalog.server.validAccess = "access-expired"
         catalog.server.refreshStatus = HttpStatusCode.Forbidden
 
-        val failed = assertIs<ProductListResult.Failed>(catalog.pager(pageSize = 2).reload())
+        val failed = assertIs<CatalogResult.Failed>(catalog.pager(pageSize = 2).reload())
 
         assertEquals(ApiFailure.Unauthorized, failed.failure)
     }
