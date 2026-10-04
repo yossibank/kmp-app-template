@@ -84,11 +84,22 @@ jobs:
       - name: Verify
         run: make verify
 
+      - name: Create a token for the iOS app
+        if: needs.changes.outputs.apps == 'true'
+        id: ios-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.SHARED_CORE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.SHARED_CORE_APP_PRIVATE_KEY }}
+          repositories: ios-app-template
+          permission-contents: read
+
       - name: Checkout the iOS app
         if: needs.changes.outputs.apps == 'true'
         uses: actions/checkout@v7
         with:
           repository: ${{ github.repository_owner }}/ios-app-template
+          token: ${{ steps.ios-token.outputs.token }}
           path: apps/ios
 
       - name: Compile the iOS app against this build
@@ -117,10 +128,20 @@ jobs:
         with:
           path: kmp
 
+      - name: Create a token for the Android app
+        id: android-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.SHARED_CORE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.SHARED_CORE_APP_PRIVATE_KEY }}
+          repositories: android-app-template
+          permission-contents: read
+
       - name: Checkout the Android app
         uses: actions/checkout@v7
         with:
           repository: ${{ github.repository_owner }}/android-app-template
+          token: ${{ steps.android-token.outputs.token }}
           path: android
 
       - name: Check the versions brought into the app
