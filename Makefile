@@ -1,6 +1,6 @@
 GRADLE := ./gradlew
 
-.PHONY: verify api lint format test build build-android build-ios publish-local publish clean
+.PHONY: verify api lint format test build build-android build-ios publish-local clean
 
 verify:
 	$(GRADLE) \
@@ -33,10 +33,6 @@ build-ios:
 
 publish-local:
 	$(GRADLE) :shared:publishToMavenLocal
-
-publish:
-	$(if $(VERSION),,$(error VERSION を指定してください（例: make publish VERSION=0.3.0）))
-	$(GRADLE) :shared:publishAndroidPublicationToCodeArtifactRepository -PreleaseVersion=$(VERSION)
 
 clean:
 	$(GRADLE) clean
