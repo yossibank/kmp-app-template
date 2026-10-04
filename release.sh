@@ -25,6 +25,12 @@ check_can_release() {
         exit 1
     fi
 
+    LATEST="$(git ls-remote --tags --refs origin 'v*' | sed 's#.*refs/tags/v##' | sort -V | tail -n 1)"
+    if [ -n "$LATEST" ] && [ "$(printf '%s\n%s\n' "$LATEST" "$VERSION" | sort -V | tail -n 1)" != "$VERSION" ]; then
+        echo "最新は v${LATEST} です。それより大きいバージョンを指定してください: $VERSION" >&2
+        exit 1
+    fi
+
     if [ -n "$(git status --porcelain)" ]; then
         echo "コミットされていない変更があります。先に整理してください。" >&2
         exit 1
