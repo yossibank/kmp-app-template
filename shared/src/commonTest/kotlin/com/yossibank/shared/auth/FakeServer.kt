@@ -40,6 +40,8 @@ internal class FakeServer(
     var refreshStatus = HttpStatusCode.OK
     var refreshUnreachable = false
     var expiredRequestsToHold = 0
+    var refreshToHold: CompletableDeferred<Unit>? = null
+    val refreshArrived = CompletableDeferred<Unit>()
 
     val refreshedWith = mutableListOf<String>()
     val authorizations = mutableListOf<String?>()
@@ -75,10 +77,13 @@ internal class FakeServer(
         json("""{"message":"Invalid credentials"}""", loginStatus)
     }
 
-    private fun MockRequestHandleScope.refresh(refreshToken: String): HttpResponseData {
+    private suspend fun MockRequestHandleScope.refresh(refreshToken: String): HttpResponseData {
         refreshedWith += refreshToken
 
         check(!refreshUnreachable) { "connection refused" }
+
+        refreshArrived.complete(Unit)
+        refreshToHold?.await()
 
         if (refreshStatus != HttpStatusCode.OK) {
             return json("""{"message":"Invalid refresh token"}""", refreshStatus)
