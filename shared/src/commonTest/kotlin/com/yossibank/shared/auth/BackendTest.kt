@@ -4,6 +4,7 @@ import com.yossibank.shared.core.ApiFailure
 import com.yossibank.shared.core.ApiResult
 import com.yossibank.shared.generated.model.ProductList
 import io.ktor.http.HttpStatusCode
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -133,6 +134,68 @@ class BackendTest {
         assertNull(store.tokens)
         assertTrue(server.authorizations.all { it == null }, "ログアウト後もトークンを送っている")
         assertTrue(server.refreshedWith.isEmpty())
+    }
+
+    @Test
+    fun logging_out_during_a_refresh_keeps_the_user_logged_out() = runTest {
+        val server = FakeServer(StandardTestDispatcher(testScheduler)).apply {
+            validAccess = "access-expired"
+            refreshToHold = CompletableDeferred()
+        }
+        val store = InMemoryTokenStore(Tokens("access-1", "refresh-1"))
+        val backend = server.backend(store)
+
+        val pending = async { backend.fetch() }
+        server.refreshArrived.await()
+        backend.logout()
+        server.refreshToHold?.complete(Unit)
+        pending.await()
+        server.authorizations.clear()
+        val result = assertIs<ApiResult.Err>(backend.fetch())
+
+        assertFalse(backend.isLoggedIn, "ログアウト後に更新したトークンを保存している")
+        assertNull(store.tokens)
+        assertEquals(ApiFailure.Unauthorized, result.failure)
+        assertEquals(listOf<String?>(null), server.authorizations, "ログアウト後も更新したトークンを送っている")
+    }
+
+    @Test
+    fun logging_in_again_during_a_refresh_keeps_the_new_tokens() = runTest {
+        val server = FakeServer(StandardTestDispatcher(testScheduler)).apply {
+            validAccess = "access-expired"
+            refreshToHold = CompletableDeferred()
+        }
+        val store = InMemoryTokenStore(Tokens("access-old", "refresh-old"))
+        val backend = server.backend(store)
+
+        val pending = async { backend.fetch() }
+        server.refreshArrived.await()
+        backend.logout()
+        backend.login("emilys", "emilyspass")
+        server.refreshToHold?.complete(Unit)
+        pending.await()
+
+        assertEquals(Tokens("access-1", "refresh-1"), store.tokens, "前のセッションの更新で、ログインし直したトークンを上書きしている")
+    }
+
+    @Test
+    fun a_rejected_refresh_from_the_previous_session_keeps_the_new_login() = runTest {
+        val server = FakeServer(StandardTestDispatcher(testScheduler)).apply {
+            validAccess = "access-expired"
+            refreshStatus = HttpStatusCode.Forbidden
+            refreshToHold = CompletableDeferred()
+        }
+        val store = InMemoryTokenStore(Tokens("access-old", "refresh-old"))
+        val backend = server.backend(store)
+
+        val pending = async { backend.fetch() }
+        server.refreshArrived.await()
+        backend.logout()
+        backend.login("emilys", "emilyspass")
+        server.refreshToHold?.complete(Unit)
+        pending.await()
+
+        assertTrue(backend.isLoggedIn, "前のセッションの更新が拒否されて、ログインし直した状態を消している")
     }
 
     @Test

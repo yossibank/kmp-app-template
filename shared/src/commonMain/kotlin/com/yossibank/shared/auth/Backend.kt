@@ -76,7 +76,7 @@ internal class Backend(
         }
 
         if (response.status in sessionEnded) {
-            store.clear()
+            if (isCurrent(refreshToken)) store.clear()
             return null
         }
 
@@ -92,9 +92,13 @@ internal class Backend(
             throw RequestFailed(ApiFailure.Unreadable)
         }
 
+        if (!isCurrent(refreshToken)) return null
+
         store.save(Tokens(tokens.accessToken, tokens.refreshToken))
         return BearerTokens(tokens.accessToken, tokens.refreshToken)
     }
+
+    private fun isCurrent(refreshToken: String) = store.load()?.refreshToken == refreshToken
 
     private companion object {
         val sessionEnded = setOf(
