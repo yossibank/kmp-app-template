@@ -4,6 +4,8 @@ iOS と Android で共有するロジックを Kotlin Multiplatform で書いた
 
 ## 作業の進め方
 
+作業では、次の手順と版の決まりを守る。
+
 - 変更したら `make verify` を通す。
 - バージョンは `gradle/libs.versions.toml` 以外で指定しない。
 - Kotlin・kotlinx・Ktor は、アプリ側が使っているバージョンより新しくしない。アプリに持ち込まれ、そこでの下限になる。Renovate は承認してから PR を作る。
