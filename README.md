@@ -2,11 +2,16 @@
 
 iOS と Android で共有するロジックを Kotlin Multiplatform で書いたライブラリ
 
-[![Verify](https://github.com/yossibank/kmp-app-template/actions/workflows/verify.yml/badge.svg)](https://github.com/yossibank/kmp-app-template/actions/workflows/verify.yml)
+[![Verify](https://img.shields.io/github/actions/workflow/status/yossibank/kmp-app-template/verify.yml?label=Verify&logo=github)](https://github.com/yossibank/kmp-app-template/actions/workflows/verify.yml)
 [![Release](https://img.shields.io/github/v/release/yossibank/kmp-app-template)](https://github.com/yossibank/kmp-app-template/releases/latest)
 [![License](https://img.shields.io/github/license/yossibank/kmp-app-template)](LICENSE)
 
-Kotlin Multiplatform ・ Ktor ・ kotlinx.serialization ・ SKIE ・ OpenAPI
+![Kotlin 2.4](https://img.shields.io/badge/Kotlin-2.4-7F52FF?logo=kotlin&logoColor=white)
+![Kotlin Multiplatform](https://img.shields.io/badge/Kotlin_Multiplatform-7F52FF?logo=kotlin&logoColor=white)
+![Ktor](https://img.shields.io/badge/Ktor-087CFA?logo=ktor&logoColor=white)
+![kotlinx.serialization](https://img.shields.io/badge/kotlinx.serialization-7F52FF?logo=kotlin&logoColor=white)
+![SKIE](https://img.shields.io/badge/SKIE-7F52FF)
+![OpenAPI](https://img.shields.io/badge/OpenAPI-6BA539?logo=openapiinitiative&logoColor=white)
 
 <table>
   <tr>
