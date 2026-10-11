@@ -1,5 +1,3 @@
-<div align="center">
-
 # 🧩 kmp-app-template
 
 iOS と Android で共有するロジックを Kotlin Multiplatform で書いたライブラリ
@@ -34,8 +32,6 @@ iOS と Android で共有するロジックを Kotlin Multiplatform で書いた
     </td>
   </tr>
 </table>
-
-</div>
 
 ## 共通コアが担うこと
 
