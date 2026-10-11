@@ -6,11 +6,7 @@ iOS と Android で共有するロジックを Kotlin Multiplatform で書いた
 [![Release](https://img.shields.io/github/v/release/yossibank/kmp-app-template)](https://github.com/yossibank/kmp-app-template/releases/latest)
 [![License](https://img.shields.io/github/license/yossibank/kmp-app-template)](LICENSE)
 
-![Kotlin Multiplatform](https://img.shields.io/badge/Kotlin_Multiplatform-7F52FF?logo=kotlin&logoColor=white)
-![Ktor](https://img.shields.io/badge/Ktor-087CFA?logo=ktor&logoColor=white)
-![kotlinx.serialization](https://img.shields.io/badge/kotlinx.serialization-7F52FF?logo=kotlin&logoColor=white)
-![SKIE](https://img.shields.io/badge/SKIE-555555)
-![OpenAPI](https://img.shields.io/badge/OpenAPI-6BA539?logo=openapiinitiative&logoColor=white)
+使う技術は、Kotlin Multiplatform、Ktor、kotlinx.serialization、SKIE、OpenAPI である。
 
 <table>
   <tr>

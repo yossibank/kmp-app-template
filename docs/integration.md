@@ -27,7 +27,7 @@ flowchart LR
 
 ## Android
 
-Android アプリには、次の 3 段で組み込む。
+Android アプリには、次の手順で組み込む。
 
 ### 1. 取得先と依存を足す
 
@@ -91,7 +91,7 @@ class App : Application() {
 
 ## iOS
 
-iOS アプリには、次の 4 段で組み込む。
+iOS アプリには、次の手順で組み込む。
 
 ### 1. パッケージを足す
 
