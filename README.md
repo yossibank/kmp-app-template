@@ -37,15 +37,17 @@ iOS と Android で共有するロジックを Kotlin Multiplatform で書いた
 
 </div>
 
-## 📦 共通コアが担うこと
+## 共通コアが担うこと
 
-| | 内容 |
+共通コアは、両 OS のアプリが使う次の機能を受け持つ。
+
+| 機能 | 内容 |
 | --- | --- |
-| 🔐 ログイン | DummyJSON へのログインと、トークンの保存（Keychain / Keystore）・更新 |
-| 🛍️ 商品一覧 | 価格・ブランドを含む取得とページング |
-| ⚠️ エラー | 通信の失敗を分類して返す |
+| ログイン | DummyJSON へのログインと、トークンの保存（Keychain / Keystore）・更新 |
+| 商品一覧 | 価格・ブランドを含む取得とページング |
+| エラー | 通信の失敗を分類して返す |
 
-## 🔗 3 つのリポジトリ
+## 3 つのリポジトリ
 
 ```mermaid
 flowchart LR
@@ -59,42 +61,39 @@ flowchart LR
 
 [🍎 ios-app-template](https://github.com/yossibank/ios-app-template) ・ [🤖 android-app-template](https://github.com/yossibank/android-app-template)
 
-## 🚀 使い方
+## 使い方
 
 | コマンド | いつ使うか |
 | --- | --- |
 | `make verify` | 変更したら通す |
 | `make api` | 公開 API を変えたら、`shared/api/` のダンプを更新する |
 
+既存のアプリに組み込む手順は [docs/integration.md](docs/integration.md) にある。
+
 > [!IMPORTANT]
-> 公開 API のダンプと差分があると `make verify` が落ちます。
+> 公開 API のダンプと差分があると `make verify` が落ちる。
 
-> [!TIP]
-> 既存のアプリに組み込む手順は [docs/integration.md](docs/integration.md) にあります。
+## リリース
 
-## 🏷️ リリース
-
-GitHub Actions の **Release** ワークフローにバージョン（semver）を渡して実行します。
+GitHub Actions の **Release** ワークフローにバージョン（semver）を渡して実行する。
 
 ```mermaid
 flowchart LR
-    BUILD["🔨 XCFramework<br/>をビルド"]
-    TAG["🏷️ タグだけ push<br/><i>main は変えない</i>"]
-    AAR["📦 AAR を<br/>CodeArtifact へ"]
-    PR["🔀 アプリ 2 つに<br/>バージョン上げの PR"]
+    BUILD["XCFramework<br/>をビルド"]
+    TAG["タグだけ push<br/>main は変えない"]
+    AAR["AAR を<br/>CodeArtifact へ"]
+    PR["アプリ 2 つに<br/>バージョン上げの PR"]
     BUILD --> TAG --> AAR --> PR
 ```
 
 > [!NOTE]
-> 手元からは、AWS にログインしたうえで `./release.sh <version>` を実行します。
+> 手元からは、AWS にログインしたうえで `./release.sh <version>` を実行する。
 
-<details>
-<summary>🧰 テンプレートから作ったとき</summary>
+## テンプレートから作ったとき
 
-パッケージの接頭辞と GitHub のオーナーを置き換えます。3 つのリポジトリそれぞれで実行します。
+パッケージの接頭辞と GitHub のオーナーを置き換える。3 つのリポジトリそれぞれで実行する。
 
 ```sh
 scripts/rename.sh <GitHub のオーナー> <パッケージの接頭辞>    # 例: scripts/rename.sh acme com.acme
 ```
 
-</details>

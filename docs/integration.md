@@ -1,6 +1,6 @@
 # 既存アプリに組み込む
 
-共通コアを、すでにある iOS / Android アプリに足す手順です。
+共通コアを、すでにある iOS / Android アプリに足す手順を書く。
 
 ```mermaid
 flowchart LR
@@ -26,6 +26,8 @@ flowchart LR
 | Xcode | `Package.swift` の `swift-tools-version` | これより古い Xcode では解決できない |
 
 ## Android
+
+Android アプリには、次の 3 段で組み込む。
 
 ### 1. 取得先と依存を足す
 
@@ -65,7 +67,7 @@ dependencyResolutionManagement {
 }
 ```
 
-依存は `com.yossibank:shared-android:<バージョン>` です。
+依存は `com.yossibank:shared-android:<バージョン>` にする。
 
 ### 2. トークンを渡す
 
@@ -76,7 +78,7 @@ dependencyResolutionManagement {
 
 ### 3. 起動時に設定する
 
-KMP の型は Kotlin の型なので、境界のモジュールは作らずにそのまま使います。
+KMP の型は Kotlin の型なので、境界のモジュールは作らずにそのまま使う。
 
 ```kotlin
 class App : Application() {
@@ -89,17 +91,19 @@ class App : Application() {
 
 ## iOS
 
+iOS アプリには、次の 4 段で組み込む。
+
 ### 1. パッケージを足す
 
 ```swift
 .package(url: "https://github.com/<オーナー>/kmp-app-template.git", exact: "<バージョン>")
 ```
 
-ターゲットの依存は `.product(name: "Shared", package: "kmp-app-template")` です。
+ターゲットの依存は `.product(name: "Shared", package: "kmp-app-template")` にする。
 
 ### 2. 資格情報を渡す（プライベートのとき）
 
-XCFramework は `api.github.com` から取るので、リポジトリを clone できるだけでは足りません。
+XCFramework は `api.github.com` から取るので、リポジトリを clone できるだけでは足りない。
 
 | 場所 | 渡し方 | 見本 |
 | --- | --- | --- |
@@ -119,7 +123,7 @@ flowchart LR
     SHARED["Shared<br/><i>共通コア</i>"] --> BOUNDARY["境界<br/><i>Swift の型に直す</i>"] --> FEATURES["各画面"]
 ```
 
-KMP の型（`Int32` や sealed interface）を画面に出しません。共通コアの API が増えても、直すのはこのモジュールだけです。見本は ios-app-template の `SharedCore` です。
+KMP の型（`Int32` や sealed interface）を画面に出さない。共通コアの API が増えても、直すのはこのモジュールだけになる。見本は ios-app-template の `SharedCore` にある。
 
 ### 4. 起動時に設定する
 
@@ -128,4 +132,4 @@ Session.shared.configure(baseUrl: "https://api.example.com")
 ```
 
 > [!NOTE]
-> コマンドラインで `generic/platform=iOS Simulator` を指定するときは `ARCHS=arm64` を付けます。XCFramework に x86_64 のシミュレータ向けが無いので、SKIE が生成する Swift の拡張が見えずに落ちます。
+> コマンドラインで `generic/platform=iOS Simulator` を指定するときは `ARCHS=arm64` を付ける。XCFramework には x86_64 のシミュレータ向けが無い。そのため、SKIE が生成する Swift の拡張が見えずに落ちる。
