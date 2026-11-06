@@ -2,49 +2,21 @@
 
 iOS と Android で共有するロジックを Kotlin Multiplatform で書いたライブラリ
 
-[![Verify](https://img.shields.io/github/actions/workflow/status/yossibank/kmp-app-template/verify.yml?label=Verify&logo=github)](https://github.com/yossibank/kmp-app-template/actions/workflows/verify.yml)
-[![Release](https://img.shields.io/github/v/release/yossibank/kmp-app-template)](https://github.com/yossibank/kmp-app-template/releases/latest)
-[![License](https://img.shields.io/github/license/yossibank/kmp-app-template)](LICENSE)
+<img src="docs/images/tech.svg" alt="Kotlin 2.4、Kotlin Multiplatform、Ktor、kotlinx.serialization、SKIE、OpenAPI">
 
-![Kotlin 2.4](https://img.shields.io/badge/Kotlin-2.4-7F52FF?logo=kotlin&logoColor=white)
-![Kotlin Multiplatform](https://img.shields.io/badge/Kotlin_Multiplatform-7F52FF?logo=kotlin&logoColor=white)
-![Ktor](https://img.shields.io/badge/Ktor-087CFA?logo=ktor&logoColor=white)
-![kotlinx.serialization](https://img.shields.io/badge/kotlinx.serialization-7F52FF?logo=kotlin&logoColor=white)
-![SKIE](https://img.shields.io/badge/SKIE-7F52FF)
-![OpenAPI](https://img.shields.io/badge/OpenAPI-6BA539?logo=openapiinitiative&logoColor=white)
+## ✨ 機能
 
-<table>
-  <tr>
-    <th>🍎 iOS（SwiftUI）</th>
-    <th>🤖 Android（Jetpack Compose）</th>
-  </tr>
-  <tr>
-    <td>
-      <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="docs/images/ios-list-dark.png">
-        <img src="docs/images/ios-list-light.png" width="260" alt="iOS の一覧">
-      </picture>
-    </td>
-    <td>
-      <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="docs/images/android-list-dark.png">
-        <img src="docs/images/android-list-light.png" width="260" alt="Android の一覧">
-      </picture>
-    </td>
-  </tr>
-</table>
+| 🍎 iOS（SwiftUI） | 🤖 Android（Jetpack Compose） |
+| --- | --- |
+| <picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/ios-list-dark.png"><img src="docs/images/ios-list-light.png" width="260" alt="iOS の一覧"></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/android-list-dark.png"><img src="docs/images/android-list-light.png" width="260" alt="Android の一覧"></picture> |
 
-## ✨ 共通コアが担うこと
-
-共通コアは、両 OS のアプリが使う次の機能を受け持つ。
-
-- ログイン：DummyJSON へのログインと、トークンの保存（Keychain / Keystore）・更新
-- 商品一覧：価格・ブランドを含む取得とページング
-- エラー：通信の失敗を分類して返す
+| 機能 | 内容 |
+| --- | --- |
+| ログイン | DummyJSON へのログインと、トークンの保存（Keychain / Keystore）・更新 |
+| 商品一覧 | 価格・ブランドを含む取得とページング |
+| エラー | 通信の失敗を分類して返す |
 
 ## 🗺️ 全体像
-
-共通コアと 2 つのアプリを、3 つのリポジトリに分けている。
 
 ```mermaid
 flowchart LR
@@ -58,21 +30,33 @@ flowchart LR
 
 [🍎 ios-app-template](https://github.com/yossibank/ios-app-template) ・ [🤖 android-app-template](https://github.com/yossibank/android-app-template)
 
-## 🚀 使い方
+## 💻 実行環境
 
-| コマンド | いつ使うか |
+| 項目 | 内容 |
 | --- | --- |
-| `make verify` | 変更したら通す |
-| `make api` | 公開 API を変えたら、`shared/api/` のダンプを更新する |
+| 対応 OS | iOS、Android 7+（minSdk 24） |
+| 言語 | Kotlin 2.4 |
+| ビルド | Gradle 9.8.2 |
+| 主な技術 | Kotlin Multiplatform、Ktor、kotlinx.serialization、SKIE、OpenAPI |
 
-既存のアプリに組み込む手順は [docs/integration.md](docs/integration.md) にある。
+[手順とコマンド](docs/development.md)
 
-> [!IMPORTANT]
-> 公開 API のダンプと差分があると `make verify` が落ちる。
+## 🚀 入れ方
+
+```sh
+# テンプレートから作ったとき：GitHub のオーナーとパッケージの接頭辞を置き換える
+# 3 つのリポジトリそれぞれで実行する
+scripts/rename.sh <GitHub のオーナー> <パッケージの接頭辞>    # 例: scripts/rename.sh acme com.acme
+```
+
+## 📚 文書
+
+| 文書 | 内容 |
+| --- | --- |
+| [docs/development.md](docs/development.md) | コマンドと、リリースの手元での実行 |
+| [docs/integration.md](docs/integration.md) | 既存のアプリに組み込む手順 |
 
 ## 📦 リリース
-
-GitHub Actions の **Release** ワークフローにバージョン（semver）を渡して実行する。
 
 ```mermaid
 flowchart LR
@@ -83,14 +67,7 @@ flowchart LR
     BUILD --> TAG --> AAR --> PR
 ```
 
-> [!NOTE]
-> 手元からは、AWS にログインしたうえで `./release.sh <version>` を実行する。
-
-## 🏷️ テンプレートから作ったとき
-
-パッケージの接頭辞と GitHub のオーナーを置き換える。3 つのリポジトリそれぞれで実行する。
-
-```sh
-scripts/rename.sh <GitHub のオーナー> <パッケージの接頭辞>    # 例: scripts/rename.sh acme com.acme
-```
-
+| 実行する所 | 方法 |
+| --- | --- |
+| GitHub Actions | Release ワークフローにバージョン（semver）を渡す |
+| 手元 | AWS にログインして `./release.sh <version>` |
