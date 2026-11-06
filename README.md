@@ -34,17 +34,9 @@ iOS と Android で共有するロジックを Kotlin Multiplatform で書いた
   </tr>
 </table>
 
-## 共通コアが担うこと
+## 🗺️ 全体像
 
-共通コアは、両 OS のアプリが使う次の機能を受け持つ。
-
-| 機能 | 内容 |
-| --- | --- |
-| ログイン | DummyJSON へのログインと、トークンの保存（Keychain / Keystore）・更新 |
-| 商品一覧 | 価格・ブランドを含む取得とページング |
-| エラー | 通信の失敗を分類して返す |
-
-## 3 つのリポジトリ
+共通コアと 2 つのアプリを、3 つのリポジトリに分けている。
 
 ```mermaid
 flowchart LR
@@ -58,7 +50,7 @@ flowchart LR
 
 [🍎 ios-app-template](https://github.com/yossibank/ios-app-template) ・ [🤖 android-app-template](https://github.com/yossibank/android-app-template)
 
-## 使い方
+## 🚀 使い方
 
 | コマンド | いつ使うか |
 | --- | --- |
@@ -70,7 +62,17 @@ flowchart LR
 > [!IMPORTANT]
 > 公開 API のダンプと差分があると `make verify` が落ちる。
 
-## リリース
+## ✨ 共通コアが担うこと
+
+共通コアは、両 OS のアプリが使う次の機能を受け持つ。
+
+| 機能 | 内容 |
+| --- | --- |
+| ログイン | DummyJSON へのログインと、トークンの保存（Keychain / Keystore）・更新 |
+| 商品一覧 | 価格・ブランドを含む取得とページング |
+| エラー | 通信の失敗を分類して返す |
+
+## 📦 リリース
 
 GitHub Actions の **Release** ワークフローにバージョン（semver）を渡して実行する。
 
@@ -86,7 +88,7 @@ flowchart LR
 > [!NOTE]
 > 手元からは、AWS にログインしたうえで `./release.sh <version>` を実行する。
 
-## テンプレートから作ったとき
+## 🏷️ テンプレートから作ったとき
 
 パッケージの接頭辞と GitHub のオーナーを置き換える。3 つのリポジトリそれぞれで実行する。
 
